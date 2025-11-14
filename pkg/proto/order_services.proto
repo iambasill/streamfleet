@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package order;
+
+option go_package = "streamfleet-app/pb/order";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "order.proto";
+
+// ============================================
+// ORDER SERVICE
+// ============================================
+
+service OrderService {
+  rpc CreatePackage (Package) returns (Package);
+  rpc GetPackageById (Package) returns (PackageFullDetails);
+  rpc ListPackages (PaginationRequest) returns (stream Package);
+  rpc UpdatePackageStatus (Package) returns (Package);
+}
+
+// ============================================
+// DELIVERY SERVICE
+// ============================================
+
+service DeliveryService {
+  rpc AssignDelivery (Delivery) returns (Delivery);
+  rpc UpdateDeliveryStatus (Delivery) returns (Delivery);
+  rpc GetDeliveryDetails (Delivery) returns (DeliveryFullDetails);
+  rpc ListDeliveries (PaginationRequest) returns (stream Delivery);
+}
+
+// ============================================
+// TRACKING SERVICE
+// ============================================
+
+service TrackingService {
+  rpc AddTrackingEvent (TrackingEvent) returns (TrackingEvent);
+  rpc GetTrackingHistory (Package) returns (stream TrackingEvent);
+}
+
+// ============================================
+// ROUTE SERVICE
+// ============================================
+
+service RouteService {
+  rpc CreateRoute (Route) returns (Route);
+  rpc GetRouteDetails (Route) returns (RouteWithStops);
+  rpc UpdateRoute (Route) returns (Route);
+  rpc ListRoutes (PaginationRequest) returns (stream Route);
+}
