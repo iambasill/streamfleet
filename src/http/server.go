@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	database "streamfleet-app/src/database/sqlc"
-	pb "streamfleet-app/src/pb"
+	database "github.com/iambasill/streamfleet/src/database/sqlc"
+	pb "github.com/iambasill/streamfleet/src/pb"
 )
 
 type Server struct {

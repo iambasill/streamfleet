@@ -3,8 +3,9 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"streamfleet-app/src/configs"
 	"time"
+
+	"github.com/iambasill/streamfleet/src/configs"
 )
 
 func ConnectDB(config configs.DBConfig) (*sql.DB, error) {

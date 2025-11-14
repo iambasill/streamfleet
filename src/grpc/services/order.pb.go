@@ -7,12 +7,13 @@
 package order
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -2282,7 +2283,7 @@ const file_order_proto_rawDesc = "" +
 	"$TRACKING_EVENT_TYPE_OUT_FOR_DELIVERY\x10\x05\x12!\n" +
 	"\x1dTRACKING_EVENT_TYPE_DELIVERED\x10\x06\x12!\n" +
 	"\x1dTRACKING_EVENT_TYPE_EXCEPTION\x10\a\x12!\n" +
-	"\x1dTRACKING_EVENT_TYPE_CANCELLED\x10\bB\x1aZ\x18streamfleet-app/pb/orderb\x06proto3"
+	"\x1dTRACKING_EVENT_TYPE_CANCELLED\x10\bB\x1aZ\x18github.com/iambasill/streamfleet/pb/orderb\x06proto3"
 
 var (
 	file_order_proto_rawDescOnce sync.Once

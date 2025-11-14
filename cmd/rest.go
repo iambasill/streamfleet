@@ -3,12 +3,13 @@ package main
 import (
 	"log"
 	"net"
-	"streamfleet-app/src/configs"
-	pb "streamfleet-app/src/pb"
 
-	"streamfleet-app/src/controllers"
-	"streamfleet-app/src/database"
-	dbq "streamfleet-app/src/database/sqlc"
+	"github.com/iambasill/streamfleet/src/configs"
+	pb "github.com/iambasill/streamfleet/src/pb"
+
+	"github.com/iambasill/streamfleet/src/controllers"
+	"github.com/iambasill/streamfleet/src/database"
+	dbq "github.com/iambasill/streamfleet/src/database/sqlc"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"

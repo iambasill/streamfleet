@@ -7,12 +7,13 @@
 package order
 
 import (
+	reflect "reflect"
+	unsafe "unsafe"
+
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	_ "google.golang.org/protobuf/types/known/emptypb"
 	_ "google.golang.org/protobuf/types/known/timestamppb"
-	reflect "reflect"
-	unsafe "unsafe"
 )
 
 const (
@@ -45,7 +46,7 @@ const file_order_services_proto_rawDesc = "" +
 	"\x0fGetRouteDetails\x12\f.order.Route\x1a\x15.order.RouteWithStops\x12)\n" +
 	"\vUpdateRoute\x12\f.order.Route\x1a\f.order.Route\x126\n" +
 	"\n" +
-	"ListRoutes\x12\x18.order.PaginationRequest\x1a\f.order.Route0\x01B\x1aZ\x18streamfleet-app/pb/orderb\x06proto3"
+	"ListRoutes\x12\x18.order.PaginationRequest\x1a\f.order.Route0\x01B\x1aZ\x18github.com/iambasill/streamfleet/pb/orderb\x06proto3"
 
 var file_order_services_proto_goTypes = []any{
 	(*Package)(nil),             // 0: order.Package
