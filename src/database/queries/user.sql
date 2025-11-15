@@ -50,32 +50,50 @@ SELECT * FROM users
 WHERE role = $1
 ORDER BY created_at DESC;
 
+-- name: ListUsersByStatus :many
+SELECT * FROM users
+WHERE status = $1
+ORDER BY created_at DESC;
+
+-- name: ListUsersByRoleAndStatus :many
+SELECT * FROM users
+WHERE role = $1 AND status = $2
+ORDER BY created_at DESC;
+
 -- name: UpdateUser :one
 UPDATE users
 SET 
-    first_name = COALESCE($2, first_name),
-    last_name = COALESCE($3, last_name),
-    email = COALESCE($4, email),
-    phone = COALESCE($5, phone),
-    avatar = COALESCE($6, avatar),
-    status = COALESCE($7, status),
-    updated_at = now()
+    first_name = COALESCE(sqlc.narg('first_name'), first_name),
+    last_name = COALESCE(sqlc.narg('last_name'), last_name),
+    email = COALESCE(sqlc.narg('email'), email),
+    phone = COALESCE(sqlc.narg('phone'), phone),
+    avatar = COALESCE(sqlc.narg('avatar'), avatar),
+    status = COALESCE(sqlc.narg('status'), status)
 WHERE id = $1
 RETURNING *;
 
 -- name: UpdateUserPassword :exec
 UPDATE users
-SET 
-    password = $2,
-    updated_at = now()
+SET password = $2
 WHERE id = $1;
 
 -- name: UpdateUserTokens :exec
 UPDATE users
 SET 
     token = $2,
-    refresh_token = $3,
-    updated_at = now()
+    refresh_token = $3
+WHERE id = $1;
+
+-- name: UpdateUserLastLogin :exec
+UPDATE users
+SET last_login_at = now()
+WHERE id = $1;
+
+-- name: ClearUserTokens :exec
+UPDATE users
+SET 
+    token = NULL,
+    refresh_token = NULL
 WHERE id = $1;
 
 -- name: DeleteUser :exec
@@ -84,8 +102,18 @@ WHERE id = $1;
 
 -- name: DeactivateUser :one
 UPDATE users
-SET 
-    status = 'inactive',
-    updated_at = now()
+SET status = 'inactive'
+WHERE id = $1
+RETURNING *;
+
+-- name: SuspendUser :one
+UPDATE users
+SET status = 'suspended'
+WHERE id = $1
+RETURNING *;
+
+-- name: ActivateUser :one
+UPDATE users
+SET status = 'active'
 WHERE id = $1
 RETURNING *;
