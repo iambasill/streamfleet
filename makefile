@@ -64,7 +64,7 @@ proto:
 	src/proto/*.proto
 
 server:
-	go run main.go
+	go run cmd/main.go
 
 web:
 	grpcui -plaintext $(GRPC_SERVER_ADDRESS)

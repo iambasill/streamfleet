@@ -4,18 +4,15 @@ import (
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
-
-	"github.com/iambasill/streamfleet/src/configs"
-
 )
 
 func main() {
 
-	dbEnv, err := configs.DatabaseConfig(".")
-	if err != nil {
-		log.Fatal("Cannot connect to database:", err)
-	}
-	runMigration(dbEnv.DbSource, "file://src/database/migrations/")
+	// dbEnv, err := configs.DatabaseConfig(".")
+	// if err != nil {
+	// 	log.Fatal("Cannot connect to database:", err)
+	// }
+	// runMigration(dbEnv.DbSource, "file://src/database/migrations/")
 	RunHttpServer()
 
 }
