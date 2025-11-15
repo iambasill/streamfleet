@@ -1,7 +1,6 @@
 -- StreamFleet Database Schema (Fixed for Migration Tools)
 -- PostgreSQL 14+
 
-
 CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- Create ENUM types for type safety
@@ -77,7 +76,6 @@ CREATE TABLE "drivers" (
   "updated_at" timestamp NOT NULL DEFAULT now(),
   CONSTRAINT "check_rating_range" CHECK (rating >= 0 AND rating <= 5),
   CONSTRAINT "check_vehicle_capacity" CHECK (vehicle_capacity > 0),
-  CONSTRAINT "check_license_not_expired" CHECK (license_expiry > now()),
   CONSTRAINT "check_total_deliveries" CHECK (total_deliveries >= 0),
   CONSTRAINT "check_completed_deliveries" CHECK (completed_deliveries >= 0 AND completed_deliveries <= total_deliveries)
 );
@@ -525,14 +523,100 @@ ALTER TABLE "vehicle_maintenance"
   ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- =============================================
--- INDEXES FOR PERFORMANCE
+-- INDEXES FOR PERFORMANCE (FIXED)
 -- =============================================
 
+-- Users indexes
+CREATE INDEX "idx_users_email" ON "users" ("email");
+CREATE INDEX "idx_users_role_status" ON "users" ("role", "status");
+CREATE INDEX "idx_users_phone" ON "users" ("phone");
+
+-- Drivers indexes
+CREATE INDEX "idx_drivers_user_id" ON "drivers" ("user_id");
+CREATE INDEX "idx_drivers_status" ON "drivers" ("status");
+CREATE INDEX "idx_drivers_vehicle_status" ON "drivers" ("vehicle_type", "status");
+CREATE INDEX "idx_drivers_rating" ON "drivers" ("rating" DESC);
+CREATE INDEX "idx_drivers_license_expiry" ON "drivers" ("license_expiry");
+CREATE INDEX "idx_drivers_available" ON "drivers" ("status", "vehicle_type") 
+  WHERE status = 'online';
+CREATE INDEX "idx_drivers_current_location" ON "drivers" USING GIST ("current_location");
+
+-- Customers indexes
+CREATE INDEX "idx_customers_user_id" ON "customers" ("user_id");
+
+-- Addresses indexes
+CREATE INDEX "idx_addresses_user_id" ON "addresses" ("user_id");
+CREATE INDEX "idx_addresses_postal_code" ON "addresses" ("postal_code");
+CREATE INDEX "idx_addresses_city_state" ON "addresses" ("city", "state");
+CREATE INDEX "idx_addresses_location" ON "addresses" USING GIST ("location");
+CREATE INDEX "idx_addresses_default" ON "addresses" ("user_id", "is_default") 
+  WHERE is_default = true;
+
+-- Packages indexes
+CREATE INDEX "idx_packages_customer_id" ON "packages" ("customer_id");
+CREATE INDEX "idx_packages_tracking_number" ON "packages" ("tracking_number");
+CREATE INDEX "idx_packages_status" ON "packages" ("status");
+CREATE INDEX "idx_packages_status_priority" ON "packages" ("status", "priority");
+CREATE INDEX "idx_packages_created_at" ON "packages" ("created_at" DESC);
+CREATE INDEX "idx_packages_pickup_address" ON "packages" ("pickup_address_id");
+CREATE INDEX "idx_packages_delivery_address" ON "packages" ("delivery_address_id");
+CREATE INDEX "idx_packages_pending" ON "packages" ("status", "priority", "created_at") 
+  WHERE status = 'pending' AND deleted_at IS NULL;
+
+-- Deliveries indexes
+CREATE INDEX "idx_deliveries_package_id" ON "deliveries" ("package_id");
+CREATE INDEX "idx_deliveries_driver_id" ON "deliveries" ("driver_id");
+CREATE INDEX "idx_deliveries_route_id" ON "deliveries" ("route_id");
+CREATE INDEX "idx_deliveries_status" ON "deliveries" ("delivery_status");
+CREATE INDEX "idx_deliveries_driver_status" ON "deliveries" ("driver_id", "delivery_status");
+CREATE INDEX "idx_deliveries_scheduled_time" ON "deliveries" ("scheduled_delivery_time");
+CREATE INDEX "idx_deliveries_actual_time" ON "deliveries" ("actual_delivery_time");
+CREATE INDEX "idx_deliveries_active" ON "deliveries" ("delivery_status", "driver_id") 
+  WHERE delivery_status IN ('assigned', 'in_progress');
+
+-- Routes indexes
+CREATE INDEX "idx_routes_driver_id" ON "routes" ("driver_id");
+CREATE INDEX "idx_routes_status" ON "routes" ("status");
+CREATE INDEX "idx_routes_driver_status" ON "routes" ("driver_id", "status");
+CREATE INDEX "idx_routes_started_at" ON "routes" ("started_at");
+CREATE INDEX "idx_routes_completed_at" ON "routes" ("completed_at");
+
+-- Route stops indexes
+CREATE INDEX "idx_route_stops_route_sequence" ON "route_stops" ("route_id", "stop_sequence");
+CREATE INDEX "idx_route_stops_delivery_id" ON "route_stops" ("delivery_id");
+CREATE INDEX "idx_route_stops_status" ON "route_stops" ("status");
+CREATE INDEX "idx_route_stops_scheduled_arrival" ON "route_stops" ("scheduled_arrival");
+
+-- Tracking events indexes
+CREATE INDEX "idx_tracking_events_package_time" ON "tracking_events" ("package_id", "occurred_at" DESC);
+CREATE INDEX "idx_tracking_events_delivery_time" ON "tracking_events" ("delivery_id", "occurred_at" DESC);
+CREATE INDEX "idx_tracking_events_type" ON "tracking_events" ("event_type");
+CREATE INDEX "idx_tracking_events_occurred_at" ON "tracking_events" ("occurred_at" DESC);
+
+-- Driver locations indexes
+CREATE INDEX "idx_driver_locations_driver_time" ON "driver_locations" ("driver_id", "recorded_at" DESC);
+CREATE INDEX "idx_driver_locations_location" ON "driver_locations" USING GIST ("location");
+;
+
+-- Payments indexes
+CREATE INDEX "idx_payments_customer_id" ON "payments" ("customer_id");
+CREATE INDEX "idx_payments_delivery_id" ON "payments" ("delivery_id");
+CREATE INDEX "idx_payments_status" ON "payments" ("status");
+CREATE INDEX "idx_payments_transaction_id" ON "payments" ("transaction_id");
+CREATE INDEX "idx_payments_date" ON "payments" ("payment_date" DESC);
+
+-- Pricing indexes
+CREATE INDEX "idx_pricing_zone_effective" ON "pricing" ("zone", "effective_from");
+CREATE INDEX "idx_pricing_effective_dates" ON "pricing" ("effective_from", "effective_to");
+
+
+-- Ratings indexes
 CREATE INDEX "idx_ratings_delivery_id" ON "ratings" ("delivery_id");
 CREATE INDEX "idx_ratings_rated_user" ON "ratings" ("rated_user");
 CREATE INDEX "idx_ratings_type_user" ON "ratings" ("rating_type", "rated_user");
 CREATE INDEX "idx_ratings_created_at" ON "ratings" ("created_at" DESC);
 
+-- Notifications indexes
 CREATE INDEX "idx_notifications_user_read" ON "notifications" ("user_id", "is_read");
 CREATE INDEX "idx_notifications_user_sent" ON "notifications" ("user_id", "sent_at" DESC);
 CREATE INDEX "idx_notifications_type" ON "notifications" ("notification_type");
@@ -540,12 +624,12 @@ CREATE INDEX "idx_notifications_reference" ON "notifications" ("reference_id", "
 CREATE INDEX "idx_notifications_unread" ON "notifications" ("user_id", "sent_at" DESC) 
   WHERE is_read = false;
 
+-- Vehicle maintenance indexes
 CREATE INDEX "idx_vehicle_maintenance_driver_id" ON "vehicle_maintenance" ("driver_id");
 CREATE INDEX "idx_vehicle_maintenance_status" ON "vehicle_maintenance" ("status");
 CREATE INDEX "idx_vehicle_maintenance_next_due" ON "vehicle_maintenance" ("next_due_date");
 CREATE INDEX "idx_vehicle_maintenance_driver_status" ON "vehicle_maintenance" ("driver_id", "status");
-CREATE INDEX "idx_vehicle_maintenance_overdue" ON "vehicle_maintenance" ("driver_id", "next_due_date") 
-  WHERE status = 'scheduled' AND next_due_date < now();
+
 
 -- =============================================
 -- TRIGGERS FOR AUTO-UPDATING FIELDS
@@ -628,14 +712,14 @@ WHEN (NEW.rating_type = 'driver_rating')
 EXECUTE FUNCTION update_driver_rating();
 
 -- =============================================
--- AUTO-SYNC geometry COLUMNS TRIGGER
+-- AUTO-SYNC GEOMETRY COLUMNS TRIGGER
 -- =============================================
 
 CREATE OR REPLACE FUNCTION sync_address_location()
 RETURNS TRIGGER AS $addr_loc$
 BEGIN
     IF NEW.latitude IS NOT NULL AND NEW.longitude IS NOT NULL THEN
-        NEW.location = ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326)::geometry;
+        NEW.location = ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326);
     END IF;
     RETURN NEW;
 END;
@@ -649,7 +733,7 @@ EXECUTE FUNCTION sync_address_location();
 CREATE OR REPLACE FUNCTION sync_driver_location()
 RETURNS TRIGGER AS $drv_loc$
 BEGIN
-    NEW.location = ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326)::geometry;
+    NEW.location = ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326);
     RETURN NEW;
 END;
 $drv_loc$ LANGUAGE plpgsql;
@@ -663,7 +747,7 @@ CREATE OR REPLACE FUNCTION sync_driver_current_location()
 RETURNS TRIGGER AS $drv_curr_loc$
 BEGIN
     IF NEW.current_latitude IS NOT NULL AND NEW.current_longitude IS NOT NULL THEN
-        NEW.current_location = ST_SetSRID(ST_MakePoint(NEW.current_longitude, NEW.current_latitude), 4326)::geometry;
+        NEW.current_location = ST_SetSRID(ST_MakePoint(NEW.current_longitude, NEW.current_latitude), 4326);
     END IF;
     RETURN NEW;
 END;
@@ -678,7 +762,7 @@ CREATE OR REPLACE FUNCTION sync_tracking_event_location()
 RETURNS TRIGGER AS $trk_evt_loc$
 BEGIN
     IF NEW.latitude IS NOT NULL AND NEW.longitude IS NOT NULL THEN
-        NEW.location_point = ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326)::geometry;
+        NEW.location_point = ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326);
     END IF;
     RETURN NEW;
 END;
@@ -969,76 +1053,3 @@ COMMENT ON TABLE deliveries IS 'Delivery assignments and tracking';
 COMMENT ON TABLE routes IS 'Optimized delivery routes for drivers';
 COMMENT ON TABLE tracking_events IS 'Audit trail of package journey';
 COMMENT ON TABLE driver_locations IS 'Real-time driver GPS location history';
---  "idx_users_email" ON "users" ("email");
-CREATE INDEX "idx_users_role_status" ON "users" ("role", "status");
-CREATE INDEX "idx_users_phone" ON "users" ("phone");
-
-CREATE INDEX "idx_drivers_user_id" ON "drivers" ("user_id");
-CREATE INDEX "idx_drivers_status" ON "drivers" ("status");
-CREATE INDEX "idx_drivers_vehicle_status" ON "drivers" ("vehicle_type", "status");
-CREATE INDEX "idx_drivers_rating" ON "drivers" ("rating" DESC);
-CREATE INDEX "idx_drivers_license_expiry" ON "drivers" ("license_expiry");
-CREATE INDEX "idx_drivers_available" ON "drivers" ("status", "vehicle_type") 
-  WHERE status = 'online';
-CREATE INDEX "idx_drivers_current_location" ON "drivers" USING GIST ("current_location");
-
-CREATE INDEX "idx_customers_user_id" ON "customers" ("user_id");
-
-CREATE INDEX "idx_addresses_user_id" ON "addresses" ("user_id");
-CREATE INDEX "idx_addresses_postal_code" ON "addresses" ("postal_code");
-CREATE INDEX "idx_addresses_city_state" ON "addresses" ("city", "state");
-CREATE INDEX "idx_addresses_location" ON "addresses" USING GIST ("location");
-CREATE INDEX "idx_addresses_default" ON "addresses" ("user_id", "is_default") 
-  WHERE is_default = true;
-
-CREATE INDEX "idx_packages_customer_id" ON "packages" ("customer_id");
-CREATE INDEX "idx_packages_tracking_number" ON "packages" ("tracking_number");
-CREATE INDEX "idx_packages_status" ON "packages" ("status");
-CREATE INDEX "idx_packages_status_priority" ON "packages" ("status", "priority");
-CREATE INDEX "idx_packages_created_at" ON "packages" ("created_at" DESC);
-CREATE INDEX "idx_packages_pickup_address" ON "packages" ("pickup_address_id");
-CREATE INDEX "idx_packages_delivery_address" ON "packages" ("delivery_address_id");
-CREATE INDEX "idx_packages_pending" ON "packages" ("status", "priority", "created_at") 
-  WHERE status = 'pending' AND deleted_at IS NULL;
-
-CREATE INDEX "idx_deliveries_package_id" ON "deliveries" ("package_id");
-CREATE INDEX "idx_deliveries_driver_id" ON "deliveries" ("driver_id");
-CREATE INDEX "idx_deliveries_route_id" ON "deliveries" ("route_id");
-CREATE INDEX "idx_deliveries_status" ON "deliveries" ("delivery_status");
-CREATE INDEX "idx_deliveries_driver_status" ON "deliveries" ("driver_id", "delivery_status");
-CREATE INDEX "idx_deliveries_scheduled_time" ON "deliveries" ("scheduled_delivery_time");
-CREATE INDEX "idx_deliveries_actual_time" ON "deliveries" ("actual_delivery_time");
-CREATE INDEX "idx_deliveries_active" ON "deliveries" ("delivery_status", "driver_id") 
-  WHERE delivery_status IN ('assigned', 'in_progress');
-
-CREATE INDEX "idx_routes_driver_id" ON "routes" ("driver_id");
-CREATE INDEX "idx_routes_status" ON "routes" ("status");
-CREATE INDEX "idx_routes_driver_status" ON "routes" ("driver_id", "status");
-CREATE INDEX "idx_routes_started_at" ON "routes" ("started_at");
-CREATE INDEX "idx_routes_completed_at" ON "routes" ("completed_at");
-
-CREATE INDEX "idx_route_stops_route_sequence" ON "route_stops" ("route_id", "stop_sequence");
-CREATE INDEX "idx_route_stops_delivery_id" ON "route_stops" ("delivery_id");
-CREATE INDEX "idx_route_stops_status" ON "route_stops" ("status");
-CREATE INDEX "idx_route_stops_scheduled_arrival" ON "route_stops" ("scheduled_arrival");
-
-CREATE INDEX "idx_tracking_events_package_time" ON "tracking_events" ("package_id", "occurred_at" DESC);
-CREATE INDEX "idx_tracking_events_delivery_time" ON "tracking_events" ("delivery_id", "occurred_at" DESC);
-CREATE INDEX "idx_tracking_events_type" ON "tracking_events" ("event_type");
-CREATE INDEX "idx_tracking_events_occurred_at" ON "tracking_events" ("occurred_at" DESC);
-
-CREATE INDEX "idx_driver_locations_driver_time" ON "driver_locations" ("driver_id", "recorded_at" DESC);
-CREATE INDEX "idx_driver_locations_location" ON "driver_locations" USING GIST ("location");
-CREATE INDEX "idx_driver_locations_recent" ON "driver_locations" ("driver_id", "recorded_at" DESC) 
-  WHERE recorded_at > now() - interval '1 hour';
-
-CREATE INDEX "idx_payments_customer_id" ON "payments" ("customer_id");
-CREATE INDEX "idx_payments_delivery_id" ON "payments" ("delivery_id");
-CREATE INDEX "idx_payments_status" ON "payments" ("status");
-CREATE INDEX "idx_payments_transaction_id" ON "payments" ("transaction_id");
-CREATE INDEX "idx_payments_date" ON "payments" ("payment_date" DESC);
-
-CREATE INDEX "idx_pricing_zone_effective" ON "pricing" ("zone", "effective_from");
-CREATE INDEX "idx_pricing_effective_dates" ON "pricing" ("effective_from", "effective_to");
-CREATE INDEX "idx_pricing_active" ON "pricing" ("zone", "is_active") 
-  WHERE is_active = true AND (effective_to IS NULL OR effective_to > now());

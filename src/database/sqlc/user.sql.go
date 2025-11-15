@@ -12,6 +12,49 @@ import (
 	"github.com/google/uuid"
 )
 
+const activateUser = `-- name: ActivateUser :one
+UPDATE users
+SET status = 'active'
+WHERE id = $1
+RETURNING id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at
+`
+
+func (q *Queries) ActivateUser(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRowContext(ctx, activateUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.Password,
+		&i.Phone,
+		&i.Avatar,
+		&i.Role,
+		&i.Status,
+		&i.Token,
+		&i.RefreshToken,
+		&i.LastLoginAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const clearUserTokens = `-- name: ClearUserTokens :exec
+UPDATE users
+SET 
+    token = NULL,
+    refresh_token = NULL
+WHERE id = $1
+`
+
+func (q *Queries) ClearUserTokens(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, clearUserTokens, id)
+	return err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     first_name,
@@ -25,7 +68,7 @@ INSERT INTO users (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8
 )
-RETURNING id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, created_at, updated_at, user_id
+RETURNING id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -34,8 +77,8 @@ type CreateUserParams struct {
 	Email     string         `json:"email"`
 	Password  string         `json:"password"`
 	Phone     string         `json:"phone"`
-	Role      string         `json:"role"`
-	Status    string         `json:"status"`
+	Role      UserRole       `json:"role"`
+	Status    UserStatus     `json:"status"`
 	Avatar    sql.NullString `json:"avatar"`
 }
 
@@ -53,6 +96,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
@@ -63,20 +107,18 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Status,
 		&i.Token,
 		&i.RefreshToken,
+		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.UserID,
 	)
 	return i, err
 }
 
 const deactivateUser = `-- name: DeactivateUser :one
 UPDATE users
-SET 
-    status = 'inactive',
-    updated_at = now()
+SET status = 'inactive'
 WHERE id = $1
-RETURNING id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, created_at, updated_at, user_id
+RETURNING id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at
 `
 
 func (q *Queries) DeactivateUser(ctx context.Context, id uuid.UUID) (User, error) {
@@ -84,6 +126,7 @@ func (q *Queries) DeactivateUser(ctx context.Context, id uuid.UUID) (User, error
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
@@ -94,9 +137,9 @@ func (q *Queries) DeactivateUser(ctx context.Context, id uuid.UUID) (User, error
 		&i.Status,
 		&i.Token,
 		&i.RefreshToken,
+		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.UserID,
 	)
 	return i, err
 }
@@ -112,7 +155,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, created_at, updated_at, user_id FROM users
+SELECT id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at FROM users
 WHERE id = $1 LIMIT 1
 `
 
@@ -121,6 +164,7 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
@@ -131,15 +175,15 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.Status,
 		&i.Token,
 		&i.RefreshToken,
+		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.UserID,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, created_at, updated_at, user_id FROM users
+SELECT id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at FROM users
 WHERE email = $1 LIMIT 1
 `
 
@@ -148,6 +192,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
@@ -158,15 +203,15 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Status,
 		&i.Token,
 		&i.RefreshToken,
+		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.UserID,
 	)
 	return i, err
 }
 
 const getUserByEmailForUpdate = `-- name: GetUserByEmailForUpdate :one
-SELECT id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, created_at, updated_at, user_id FROM users
+SELECT id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at FROM users
 WHERE email = $1 LIMIT 1
 FOR UPDATE
 `
@@ -176,6 +221,7 @@ func (q *Queries) GetUserByEmailForUpdate(ctx context.Context, email string) (Us
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
@@ -186,15 +232,15 @@ func (q *Queries) GetUserByEmailForUpdate(ctx context.Context, email string) (Us
 		&i.Status,
 		&i.Token,
 		&i.RefreshToken,
+		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.UserID,
 	)
 	return i, err
 }
 
 const getUserByUserID = `-- name: GetUserByUserID :one
-SELECT id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, created_at, updated_at, user_id FROM users
+SELECT id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at FROM users
 WHERE user_id = $1 LIMIT 1
 `
 
@@ -203,6 +249,7 @@ func (q *Queries) GetUserByUserID(ctx context.Context, userID string) (User, err
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
@@ -213,15 +260,15 @@ func (q *Queries) GetUserByUserID(ctx context.Context, userID string) (User, err
 		&i.Status,
 		&i.Token,
 		&i.RefreshToken,
+		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.UserID,
 	)
 	return i, err
 }
 
 const getUserByUserIDForUpdate = `-- name: GetUserByUserIDForUpdate :one
-SELECT id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, created_at, updated_at, user_id FROM users
+SELECT id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at FROM users
 WHERE user_id = $1 LIMIT 1
 FOR UPDATE
 `
@@ -231,6 +278,7 @@ func (q *Queries) GetUserByUserIDForUpdate(ctx context.Context, userID string) (
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
@@ -241,15 +289,15 @@ func (q *Queries) GetUserByUserIDForUpdate(ctx context.Context, userID string) (
 		&i.Status,
 		&i.Token,
 		&i.RefreshToken,
+		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.UserID,
 	)
 	return i, err
 }
 
 const getUserForUpdate = `-- name: GetUserForUpdate :one
-SELECT id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, created_at, updated_at, user_id FROM users
+SELECT id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at FROM users
 WHERE id = $1 LIMIT 1
 FOR UPDATE
 `
@@ -259,6 +307,7 @@ func (q *Queries) GetUserForUpdate(ctx context.Context, id uuid.UUID) (User, err
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
@@ -269,15 +318,15 @@ func (q *Queries) GetUserForUpdate(ctx context.Context, id uuid.UUID) (User, err
 		&i.Status,
 		&i.Token,
 		&i.RefreshToken,
+		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.UserID,
 	)
 	return i, err
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, created_at, updated_at, user_id FROM users
+SELECT id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at FROM users
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
 `
@@ -298,6 +347,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 		var i User
 		if err := rows.Scan(
 			&i.ID,
+			&i.UserID,
 			&i.FirstName,
 			&i.LastName,
 			&i.Email,
@@ -308,9 +358,9 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.Status,
 			&i.Token,
 			&i.RefreshToken,
+			&i.LastLoginAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.UserID,
 		); err != nil {
 			return nil, err
 		}
@@ -326,12 +376,12 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 }
 
 const listUsersByRole = `-- name: ListUsersByRole :many
-SELECT id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, created_at, updated_at, user_id FROM users
+SELECT id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at FROM users
 WHERE role = $1
 ORDER BY created_at DESC
 `
 
-func (q *Queries) ListUsersByRole(ctx context.Context, role string) ([]User, error) {
+func (q *Queries) ListUsersByRole(ctx context.Context, role UserRole) ([]User, error) {
 	rows, err := q.db.QueryContext(ctx, listUsersByRole, role)
 	if err != nil {
 		return nil, err
@@ -342,6 +392,7 @@ func (q *Queries) ListUsersByRole(ctx context.Context, role string) ([]User, err
 		var i User
 		if err := rows.Scan(
 			&i.ID,
+			&i.UserID,
 			&i.FirstName,
 			&i.LastName,
 			&i.Email,
@@ -352,9 +403,9 @@ func (q *Queries) ListUsersByRole(ctx context.Context, role string) ([]User, err
 			&i.Status,
 			&i.Token,
 			&i.RefreshToken,
+			&i.LastLoginAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.UserID,
 		); err != nil {
 			return nil, err
 		}
@@ -369,6 +420,131 @@ func (q *Queries) ListUsersByRole(ctx context.Context, role string) ([]User, err
 	return items, nil
 }
 
+const listUsersByRoleAndStatus = `-- name: ListUsersByRoleAndStatus :many
+SELECT id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at FROM users
+WHERE role = $1 AND status = $2
+ORDER BY created_at DESC
+`
+
+type ListUsersByRoleAndStatusParams struct {
+	Role   UserRole   `json:"role"`
+	Status UserStatus `json:"status"`
+}
+
+func (q *Queries) ListUsersByRoleAndStatus(ctx context.Context, arg ListUsersByRoleAndStatusParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, listUsersByRoleAndStatus, arg.Role, arg.Status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []User{}
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.Password,
+			&i.Phone,
+			&i.Avatar,
+			&i.Role,
+			&i.Status,
+			&i.Token,
+			&i.RefreshToken,
+			&i.LastLoginAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUsersByStatus = `-- name: ListUsersByStatus :many
+SELECT id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at FROM users
+WHERE status = $1
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListUsersByStatus(ctx context.Context, status UserStatus) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, listUsersByStatus, status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []User{}
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.Password,
+			&i.Phone,
+			&i.Avatar,
+			&i.Role,
+			&i.Status,
+			&i.Token,
+			&i.RefreshToken,
+			&i.LastLoginAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const suspendUser = `-- name: SuspendUser :one
+UPDATE users
+SET status = 'suspended'
+WHERE id = $1
+RETURNING id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at
+`
+
+func (q *Queries) SuspendUser(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRowContext(ctx, suspendUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.Password,
+		&i.Phone,
+		&i.Avatar,
+		&i.Role,
+		&i.Status,
+		&i.Token,
+		&i.RefreshToken,
+		&i.LastLoginAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET 
@@ -377,20 +553,19 @@ SET
     email = COALESCE($4, email),
     phone = COALESCE($5, phone),
     avatar = COALESCE($6, avatar),
-    status = COALESCE($7, status),
-    updated_at = now()
+    status = COALESCE($7, status)
 WHERE id = $1
-RETURNING id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, created_at, updated_at, user_id
+RETURNING id, user_id, first_name, last_name, email, password, phone, avatar, role, status, token, refresh_token, last_login_at, created_at, updated_at
 `
 
 type UpdateUserParams struct {
 	ID        uuid.UUID      `json:"id"`
-	FirstName string         `json:"first_name"`
-	LastName  string         `json:"last_name"`
-	Email     string         `json:"email"`
-	Phone     string         `json:"phone"`
+	FirstName sql.NullString `json:"first_name"`
+	LastName  sql.NullString `json:"last_name"`
+	Email     sql.NullString `json:"email"`
+	Phone     sql.NullString `json:"phone"`
 	Avatar    sql.NullString `json:"avatar"`
-	Status    string         `json:"status"`
+	Status    NullUserStatus `json:"status"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
@@ -406,6 +581,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
@@ -416,18 +592,27 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Status,
 		&i.Token,
 		&i.RefreshToken,
+		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.UserID,
 	)
 	return i, err
 }
 
+const updateUserLastLogin = `-- name: UpdateUserLastLogin :exec
+UPDATE users
+SET last_login_at = now()
+WHERE id = $1
+`
+
+func (q *Queries) UpdateUserLastLogin(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, updateUserLastLogin, id)
+	return err
+}
+
 const updateUserPassword = `-- name: UpdateUserPassword :exec
 UPDATE users
-SET 
-    password = $2,
-    updated_at = now()
+SET password = $2
 WHERE id = $1
 `
 
@@ -445,8 +630,7 @@ const updateUserTokens = `-- name: UpdateUserTokens :exec
 UPDATE users
 SET 
     token = $2,
-    refresh_token = $3,
-    updated_at = now()
+    refresh_token = $3
 WHERE id = $1
 `
 

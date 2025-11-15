@@ -11,6 +11,13 @@ import (
 )
 
 type Querier interface {
+	ActivateAddress(ctx context.Context, id uuid.UUID) error
+	ActivateUser(ctx context.Context, id uuid.UUID) (User, error)
+	ClearUserTokens(ctx context.Context, id uuid.UUID) error
+	// ============================================
+	// ADDRESS QUERIES
+	// ============================================
+	CreateAddress(ctx context.Context, arg CreateAddressParams) (Address, error)
 	// ============================================
 	// CUSTOMER QUERIES
 	// ============================================
@@ -20,31 +27,60 @@ type Querier interface {
 	// ============================================
 	CreateDriver(ctx context.Context, arg CreateDriverParams) (Driver, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeactivateAddress(ctx context.Context, id uuid.UUID) error
 	DeactivateUser(ctx context.Context, id uuid.UUID) (User, error)
+	DeleteAddress(ctx context.Context, id uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
+	FindNearbyAddresses(ctx context.Context, arg FindNearbyAddressesParams) ([]FindNearbyAddressesRow, error)
+	FindNearbyDrivers(ctx context.Context, arg FindNearbyDriversParams) ([]FindNearbyDriversRow, error)
+	GetAddress(ctx context.Context, id uuid.UUID) (Address, error)
+	GetAddressByAddressID(ctx context.Context, addressID string) (Address, error)
+	GetAddressesByPostalCode(ctx context.Context, postalCode string) ([]Address, error)
 	GetCustomer(ctx context.Context, id uuid.UUID) (Customer, error)
 	GetCustomerByCustomerID(ctx context.Context, customerID string) (Customer, error)
 	GetCustomerByUserID(ctx context.Context, userID string) (Customer, error)
+	GetCustomerStats(ctx context.Context, customerID string) (GetCustomerStatsRow, error)
 	GetCustomerWithUser(ctx context.Context, customerID string) (GetCustomerWithUserRow, error)
+	GetDefaultAddress(ctx context.Context, userID string) (Address, error)
 	GetDriver(ctx context.Context, id uuid.UUID) (Driver, error)
 	GetDriverByDriverID(ctx context.Context, driverID string) (Driver, error)
+	GetDriverByLicenseNumber(ctx context.Context, licenseNumber string) (Driver, error)
 	GetDriverByUserID(ctx context.Context, userID string) (Driver, error)
+	GetDriverByVehiclePlate(ctx context.Context, vehiclePlate string) (Driver, error)
+	GetDriverStats(ctx context.Context, driverID string) (GetDriverStatsRow, error)
 	GetDriverWithUser(ctx context.Context, driverID string) (GetDriverWithUserRow, error)
+	GetTopCustomers(ctx context.Context, limit int32) ([]Customer, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByEmailForUpdate(ctx context.Context, email string) (User, error)
 	GetUserByUserID(ctx context.Context, userID string) (User, error)
 	GetUserByUserIDForUpdate(ctx context.Context, userID string) (User, error)
 	GetUserForUpdate(ctx context.Context, id uuid.UUID) (User, error)
+	IncrementDriverDeliveries(ctx context.Context, driverID string) error
+	ListAllUserAddresses(ctx context.Context, userID string) ([]Address, error)
 	ListAvailableDrivers(ctx context.Context) ([]Driver, error)
-	ListDriversByVehicleType(ctx context.Context, vehicleType string) ([]Driver, error)
+	ListCustomers(ctx context.Context, arg ListCustomersParams) ([]Customer, error)
+	ListCustomersByBusinessType(ctx context.Context, businessType NullBusinessType) ([]Customer, error)
+	ListDriversByStatus(ctx context.Context, status DriverStatus) ([]Driver, error)
+	ListDriversByVehicleType(ctx context.Context, vehicleType DriverVehicleType) ([]Driver, error)
+	ListDriversWithExpiredLicenses(ctx context.Context) ([]Driver, error)
+	ListUserAddresses(ctx context.Context, userID string) ([]Address, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
-	ListUsersByRole(ctx context.Context, role string) ([]User, error)
+	ListUsersByRole(ctx context.Context, role UserRole) ([]User, error)
+	ListUsersByRoleAndStatus(ctx context.Context, arg ListUsersByRoleAndStatusParams) ([]User, error)
+	ListUsersByStatus(ctx context.Context, status UserStatus) ([]User, error)
+	SearchAddressesByCity(ctx context.Context, arg SearchAddressesByCityParams) ([]Address, error)
+	SetDefaultAddress(ctx context.Context, arg SetDefaultAddressParams) error
+	SuspendUser(ctx context.Context, id uuid.UUID) (User, error)
+	UpdateAddress(ctx context.Context, arg UpdateAddressParams) (Address, error)
 	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) (Customer, error)
+	UpdateCustomerCreditLimit(ctx context.Context, arg UpdateCustomerCreditLimitParams) error
 	UpdateDriver(ctx context.Context, arg UpdateDriverParams) (Driver, error)
-	UpdateDriverRating(ctx context.Context, arg UpdateDriverRatingParams) error
+	UpdateDriverLocation(ctx context.Context, arg UpdateDriverLocationParams) error
 	UpdateDriverStatus(ctx context.Context, arg UpdateDriverStatusParams) error
+	UpdateDriverVerification(ctx context.Context, arg UpdateDriverVerificationParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	UpdateUserLastLogin(ctx context.Context, id uuid.UUID) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserTokens(ctx context.Context, arg UpdateUserTokensParams) error
 }

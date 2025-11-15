@@ -6,15 +6,879 @@ package database
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/sqlc-dev/pqtype"
 )
 
+type BackgroundCheckStatus string
+
+const (
+	BackgroundCheckStatusPending  BackgroundCheckStatus = "pending"
+	BackgroundCheckStatusApproved BackgroundCheckStatus = "approved"
+	BackgroundCheckStatusRejected BackgroundCheckStatus = "rejected"
+)
+
+func (e *BackgroundCheckStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BackgroundCheckStatus(s)
+	case string:
+		*e = BackgroundCheckStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BackgroundCheckStatus: %T", src)
+	}
+	return nil
+}
+
+type NullBackgroundCheckStatus struct {
+	BackgroundCheckStatus BackgroundCheckStatus `json:"background_check_status"`
+	Valid                 bool                  `json:"valid"` // Valid is true if BackgroundCheckStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBackgroundCheckStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.BackgroundCheckStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BackgroundCheckStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBackgroundCheckStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BackgroundCheckStatus), nil
+}
+
+type BusinessType string
+
+const (
+	BusinessTypeIndividual BusinessType = "individual"
+	BusinessTypeBusiness   BusinessType = "business"
+	BusinessTypeEnterprise BusinessType = "enterprise"
+)
+
+func (e *BusinessType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BusinessType(s)
+	case string:
+		*e = BusinessType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BusinessType: %T", src)
+	}
+	return nil
+}
+
+type NullBusinessType struct {
+	BusinessType BusinessType `json:"business_type"`
+	Valid        bool         `json:"valid"` // Valid is true if BusinessType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBusinessType) Scan(value interface{}) error {
+	if value == nil {
+		ns.BusinessType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BusinessType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBusinessType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BusinessType), nil
+}
+
+type DeliveryStatus string
+
+const (
+	DeliveryStatusAssigned   DeliveryStatus = "assigned"
+	DeliveryStatusInProgress DeliveryStatus = "in_progress"
+	DeliveryStatusCompleted  DeliveryStatus = "completed"
+	DeliveryStatusFailed     DeliveryStatus = "failed"
+	DeliveryStatusCancelled  DeliveryStatus = "cancelled"
+)
+
+func (e *DeliveryStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DeliveryStatus(s)
+	case string:
+		*e = DeliveryStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DeliveryStatus: %T", src)
+	}
+	return nil
+}
+
+type NullDeliveryStatus struct {
+	DeliveryStatus DeliveryStatus `json:"delivery_status"`
+	Valid          bool           `json:"valid"` // Valid is true if DeliveryStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDeliveryStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.DeliveryStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DeliveryStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDeliveryStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DeliveryStatus), nil
+}
+
+type DriverStatus string
+
+const (
+	DriverStatusOnline     DriverStatus = "online"
+	DriverStatusOffline    DriverStatus = "offline"
+	DriverStatusOnDelivery DriverStatus = "on_delivery"
+	DriverStatusBreak      DriverStatus = "break"
+)
+
+func (e *DriverStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DriverStatus(s)
+	case string:
+		*e = DriverStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DriverStatus: %T", src)
+	}
+	return nil
+}
+
+type NullDriverStatus struct {
+	DriverStatus DriverStatus `json:"driver_status"`
+	Valid        bool         `json:"valid"` // Valid is true if DriverStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDriverStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.DriverStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DriverStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDriverStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DriverStatus), nil
+}
+
+type DriverVehicleType string
+
+const (
+	DriverVehicleTypeMotorcycle DriverVehicleType = "motorcycle"
+	DriverVehicleTypeCar        DriverVehicleType = "car"
+	DriverVehicleTypeVan        DriverVehicleType = "van"
+	DriverVehicleTypeTruck      DriverVehicleType = "truck"
+)
+
+func (e *DriverVehicleType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DriverVehicleType(s)
+	case string:
+		*e = DriverVehicleType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DriverVehicleType: %T", src)
+	}
+	return nil
+}
+
+type NullDriverVehicleType struct {
+	DriverVehicleType DriverVehicleType `json:"driver_vehicle_type"`
+	Valid             bool              `json:"valid"` // Valid is true if DriverVehicleType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDriverVehicleType) Scan(value interface{}) error {
+	if value == nil {
+		ns.DriverVehicleType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DriverVehicleType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDriverVehicleType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DriverVehicleType), nil
+}
+
+type EventType string
+
+const (
+	EventTypeCreated        EventType = "created"
+	EventTypeAssigned       EventType = "assigned"
+	EventTypePickedUp       EventType = "picked_up"
+	EventTypeInTransit      EventType = "in_transit"
+	EventTypeOutForDelivery EventType = "out_for_delivery"
+	EventTypeDelivered      EventType = "delivered"
+	EventTypeException      EventType = "exception"
+	EventTypeFailed         EventType = "failed"
+	EventTypeCancelled      EventType = "cancelled"
+)
+
+func (e *EventType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = EventType(s)
+	case string:
+		*e = EventType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for EventType: %T", src)
+	}
+	return nil
+}
+
+type NullEventType struct {
+	EventType EventType `json:"event_type"`
+	Valid     bool      `json:"valid"` // Valid is true if EventType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullEventType) Scan(value interface{}) error {
+	if value == nil {
+		ns.EventType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.EventType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullEventType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.EventType), nil
+}
+
+type MaintenanceStatus string
+
+const (
+	MaintenanceStatusScheduled MaintenanceStatus = "scheduled"
+	MaintenanceStatusCompleted MaintenanceStatus = "completed"
+	MaintenanceStatusOverdue   MaintenanceStatus = "overdue"
+)
+
+func (e *MaintenanceStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MaintenanceStatus(s)
+	case string:
+		*e = MaintenanceStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MaintenanceStatus: %T", src)
+	}
+	return nil
+}
+
+type NullMaintenanceStatus struct {
+	MaintenanceStatus MaintenanceStatus `json:"maintenance_status"`
+	Valid             bool              `json:"valid"` // Valid is true if MaintenanceStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMaintenanceStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.MaintenanceStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MaintenanceStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMaintenanceStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MaintenanceStatus), nil
+}
+
+type MaintenanceType string
+
+const (
+	MaintenanceTypeInspection MaintenanceType = "inspection"
+	MaintenanceTypeRepair     MaintenanceType = "repair"
+	MaintenanceTypeService    MaintenanceType = "service"
+)
+
+func (e *MaintenanceType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MaintenanceType(s)
+	case string:
+		*e = MaintenanceType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MaintenanceType: %T", src)
+	}
+	return nil
+}
+
+type NullMaintenanceType struct {
+	MaintenanceType MaintenanceType `json:"maintenance_type"`
+	Valid           bool            `json:"valid"` // Valid is true if MaintenanceType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMaintenanceType) Scan(value interface{}) error {
+	if value == nil {
+		ns.MaintenanceType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MaintenanceType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMaintenanceType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MaintenanceType), nil
+}
+
+type PackagePriority string
+
+const (
+	PackagePriorityExpress  PackagePriority = "express"
+	PackagePriorityStandard PackagePriority = "standard"
+	PackagePriorityEconomy  PackagePriority = "economy"
+)
+
+func (e *PackagePriority) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PackagePriority(s)
+	case string:
+		*e = PackagePriority(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PackagePriority: %T", src)
+	}
+	return nil
+}
+
+type NullPackagePriority struct {
+	PackagePriority PackagePriority `json:"package_priority"`
+	Valid           bool            `json:"valid"` // Valid is true if PackagePriority is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPackagePriority) Scan(value interface{}) error {
+	if value == nil {
+		ns.PackagePriority, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PackagePriority.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPackagePriority) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PackagePriority), nil
+}
+
+type PackageStatus string
+
+const (
+	PackageStatusPending        PackageStatus = "pending"
+	PackageStatusAssigned       PackageStatus = "assigned"
+	PackageStatusPickedUp       PackageStatus = "picked_up"
+	PackageStatusInTransit      PackageStatus = "in_transit"
+	PackageStatusOutForDelivery PackageStatus = "out_for_delivery"
+	PackageStatusDelivered      PackageStatus = "delivered"
+	PackageStatusFailed         PackageStatus = "failed"
+	PackageStatusCancelled      PackageStatus = "cancelled"
+)
+
+func (e *PackageStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PackageStatus(s)
+	case string:
+		*e = PackageStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PackageStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPackageStatus struct {
+	PackageStatus PackageStatus `json:"package_status"`
+	Valid         bool          `json:"valid"` // Valid is true if PackageStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPackageStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PackageStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PackageStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPackageStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PackageStatus), nil
+}
+
+type PaymentMethodType string
+
+const (
+	PaymentMethodTypeCreditCard PaymentMethodType = "credit_card"
+	PaymentMethodTypeDebitCard  PaymentMethodType = "debit_card"
+	PaymentMethodTypeWallet     PaymentMethodType = "wallet"
+	PaymentMethodTypeInvoice    PaymentMethodType = "invoice"
+)
+
+func (e *PaymentMethodType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentMethodType(s)
+	case string:
+		*e = PaymentMethodType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentMethodType: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentMethodType struct {
+	PaymentMethodType PaymentMethodType `json:"payment_method_type"`
+	Valid             bool              `json:"valid"` // Valid is true if PaymentMethodType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentMethodType) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentMethodType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentMethodType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentMethodType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentMethodType), nil
+}
+
+type PaymentStatus string
+
+const (
+	PaymentStatusPending   PaymentStatus = "pending"
+	PaymentStatusCompleted PaymentStatus = "completed"
+	PaymentStatusFailed    PaymentStatus = "failed"
+	PaymentStatusRefunded  PaymentStatus = "refunded"
+)
+
+func (e *PaymentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentStatus(s)
+	case string:
+		*e = PaymentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentStatus struct {
+	PaymentStatus PaymentStatus `json:"payment_status"`
+	Valid         bool          `json:"valid"` // Valid is true if PaymentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentStatus), nil
+}
+
+type RatingType string
+
+const (
+	RatingTypeDriverRating   RatingType = "driver_rating"
+	RatingTypeCustomerRating RatingType = "customer_rating"
+)
+
+func (e *RatingType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = RatingType(s)
+	case string:
+		*e = RatingType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for RatingType: %T", src)
+	}
+	return nil
+}
+
+type NullRatingType struct {
+	RatingType RatingType `json:"rating_type"`
+	Valid      bool       `json:"valid"` // Valid is true if RatingType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullRatingType) Scan(value interface{}) error {
+	if value == nil {
+		ns.RatingType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.RatingType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullRatingType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.RatingType), nil
+}
+
+type RouteStatus string
+
+const (
+	RouteStatusPlanned    RouteStatus = "planned"
+	RouteStatusInProgress RouteStatus = "in_progress"
+	RouteStatusCompleted  RouteStatus = "completed"
+	RouteStatusCancelled  RouteStatus = "cancelled"
+)
+
+func (e *RouteStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = RouteStatus(s)
+	case string:
+		*e = RouteStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for RouteStatus: %T", src)
+	}
+	return nil
+}
+
+type NullRouteStatus struct {
+	RouteStatus RouteStatus `json:"route_status"`
+	Valid       bool        `json:"valid"` // Valid is true if RouteStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullRouteStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.RouteStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.RouteStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullRouteStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.RouteStatus), nil
+}
+
+type StopStatus string
+
+const (
+	StopStatusPending   StopStatus = "pending"
+	StopStatusArrived   StopStatus = "arrived"
+	StopStatusCompleted StopStatus = "completed"
+	StopStatusSkipped   StopStatus = "skipped"
+)
+
+func (e *StopStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = StopStatus(s)
+	case string:
+		*e = StopStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for StopStatus: %T", src)
+	}
+	return nil
+}
+
+type NullStopStatus struct {
+	StopStatus StopStatus `json:"stop_status"`
+	Valid      bool       `json:"valid"` // Valid is true if StopStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStopStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.StopStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.StopStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStopStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.StopStatus), nil
+}
+
+type StopType string
+
+const (
+	StopTypePickup   StopType = "pickup"
+	StopTypeDelivery StopType = "delivery"
+)
+
+func (e *StopType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = StopType(s)
+	case string:
+		*e = StopType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for StopType: %T", src)
+	}
+	return nil
+}
+
+type NullStopType struct {
+	StopType StopType `json:"stop_type"`
+	Valid    bool     `json:"valid"` // Valid is true if StopType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStopType) Scan(value interface{}) error {
+	if value == nil {
+		ns.StopType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.StopType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStopType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.StopType), nil
+}
+
+type UserRole string
+
+const (
+	UserRoleAdmin      UserRole = "admin"
+	UserRoleDispatcher UserRole = "dispatcher"
+	UserRoleCustomer   UserRole = "customer"
+	UserRoleDriver     UserRole = "driver"
+)
+
+func (e *UserRole) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UserRole(s)
+	case string:
+		*e = UserRole(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserRole: %T", src)
+	}
+	return nil
+}
+
+type NullUserRole struct {
+	UserRole UserRole `json:"user_role"`
+	Valid    bool     `json:"valid"` // Valid is true if UserRole is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUserRole) Scan(value interface{}) error {
+	if value == nil {
+		ns.UserRole, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UserRole.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUserRole) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UserRole), nil
+}
+
+type UserStatus string
+
+const (
+	UserStatusActive    UserStatus = "active"
+	UserStatusSuspended UserStatus = "suspended"
+	UserStatusInactive  UserStatus = "inactive"
+)
+
+func (e *UserStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UserStatus(s)
+	case string:
+		*e = UserStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserStatus: %T", src)
+	}
+	return nil
+}
+
+type NullUserStatus struct {
+	UserStatus UserStatus `json:"user_status"`
+	Valid      bool       `json:"valid"` // Valid is true if UserStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUserStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.UserStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UserStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUserStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UserStatus), nil
+}
+
+type ZoneType string
+
+const (
+	ZoneTypeUrban    ZoneType = "urban"
+	ZoneTypeSuburban ZoneType = "suburban"
+	ZoneTypeRural    ZoneType = "rural"
+)
+
+func (e *ZoneType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ZoneType(s)
+	case string:
+		*e = ZoneType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ZoneType: %T", src)
+	}
+	return nil
+}
+
+type NullZoneType struct {
+	ZoneType ZoneType `json:"zone_type"`
+	Valid    bool     `json:"valid"` // Valid is true if ZoneType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullZoneType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ZoneType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ZoneType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullZoneType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ZoneType), nil
+}
+
+type ActiveDeliveriesView struct {
+	DeliveryID            string                `json:"delivery_id"`
+	DeliveryStatus        DeliveryStatus        `json:"delivery_status"`
+	PackageID             string                `json:"package_id"`
+	TrackingNumber        string                `json:"tracking_number"`
+	PackageDescription    string                `json:"package_description"`
+	Weight                string                `json:"weight"`
+	Priority              PackagePriority       `json:"priority"`
+	PackageStatus         PackageStatus         `json:"package_status"`
+	DriverID              sql.NullString        `json:"driver_id"`
+	DriverName            interface{}           `json:"driver_name"`
+	VehicleType           NullDriverVehicleType `json:"vehicle_type"`
+	VehiclePlate          sql.NullString        `json:"vehicle_plate"`
+	CustomerID            string                `json:"customer_id"`
+	CustomerName          interface{}           `json:"customer_name"`
+	CustomerEmail         string                `json:"customer_email"`
+	PickupAddress         string                `json:"pickup_address"`
+	PickupCity            string                `json:"pickup_city"`
+	DeliveryAddress       string                `json:"delivery_address"`
+	DeliveryCity          string                `json:"delivery_city"`
+	ScheduledDeliveryTime sql.NullTime          `json:"scheduled_delivery_time"`
+	EstimatedDeliveryTime sql.NullTime          `json:"estimated_delivery_time"`
+	DistanceKm            sql.NullString        `json:"distance_km"`
+	DeliveryCreatedAt     time.Time             `json:"delivery_created_at"`
+}
+
 type Address struct {
-	ID     uuid.UUID `json:"id"`
-	UserID string    `json:"user_id"`
-	// home, office, warehouse, etc
+	ID            uuid.UUID      `json:"id"`
+	AddressID     string         `json:"address_id"`
+	UserID        string         `json:"user_id"`
 	Label         sql.NullString `json:"label"`
 	StreetAddress string         `json:"street_address"`
 	City          string         `json:"city"`
@@ -23,31 +887,34 @@ type Address struct {
 	Country       string         `json:"country"`
 	Latitude      sql.NullString `json:"latitude"`
 	Longitude     sql.NullString `json:"longitude"`
-	// delivery instructions
-	Instructions sql.NullString `json:"instructions"`
-	IsDefault    sql.NullBool   `json:"is_default"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
-	AddressID    string         `json:"address_id"`
-}
-
-type Customer struct {
-	ID          uuid.UUID      `json:"id"`
-	UserID      string         `json:"user_id"`
-	CompanyName sql.NullString `json:"company_name"`
-	// individual, business, enterprise
-	BusinessType   sql.NullString `json:"business_type"`
-	BillingAddress string         `json:"billing_address"`
-	// credit_card, debit_card, wallet, invoice
-	PaymentMethod sql.NullString `json:"payment_method"`
-	CreditLimit   sql.NullString `json:"credit_limit"`
+	Location      interface{}    `json:"location"`
+	Instructions  sql.NullString `json:"instructions"`
+	IsDefault     sql.NullBool   `json:"is_default"`
+	IsActive      sql.NullBool   `json:"is_active"`
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
-	CustomerID    string         `json:"customer_id"`
 }
 
+// Customer profiles and business information
+type Customer struct {
+	ID             uuid.UUID             `json:"id"`
+	CustomerID     string                `json:"customer_id"`
+	UserID         string                `json:"user_id"`
+	CompanyName    sql.NullString        `json:"company_name"`
+	BusinessType   NullBusinessType      `json:"business_type"`
+	BillingAddress string                `json:"billing_address"`
+	PaymentMethod  NullPaymentMethodType `json:"payment_method"`
+	CreditLimit    sql.NullString        `json:"credit_limit"`
+	TotalSpent     sql.NullString        `json:"total_spent"`
+	TotalOrders    sql.NullInt32         `json:"total_orders"`
+	CreatedAt      time.Time             `json:"created_at"`
+	UpdatedAt      time.Time             `json:"updated_at"`
+}
+
+// Delivery assignments and tracking
 type Delivery struct {
 	ID                    uuid.UUID      `json:"id"`
+	DeliveryID            string         `json:"delivery_id"`
 	PackageID             string         `json:"package_id"`
 	DriverID              sql.NullString `json:"driver_id"`
 	RouteID               sql.NullString `json:"route_id"`
@@ -56,240 +923,273 @@ type Delivery struct {
 	ScheduledDeliveryTime sql.NullTime   `json:"scheduled_delivery_time"`
 	EstimatedDeliveryTime sql.NullTime   `json:"estimated_delivery_time"`
 	ActualDeliveryTime    sql.NullTime   `json:"actual_delivery_time"`
-	// assigned, in_progress, completed, failed, cancelled
-	DeliveryStatus string `json:"delivery_status"`
-	// signature or photo URL
-	DeliveryProof   sql.NullString `json:"delivery_proof"`
-	DeliveryNotes   sql.NullString `json:"delivery_notes"`
-	FailureReason   sql.NullString `json:"failure_reason"`
-	DistanceKm      sql.NullString `json:"distance_km"`
-	DurationMinutes sql.NullInt32  `json:"duration_minutes"`
-	CreatedAt       time.Time      `json:"created_at"`
-	UpdatedAt       time.Time      `json:"updated_at"`
-	DeliveryID      string         `json:"delivery_id"`
+	DeliveryStatus        DeliveryStatus `json:"delivery_status"`
+	PickupSignature       sql.NullString `json:"pickup_signature"`
+	DeliverySignature     sql.NullString `json:"delivery_signature"`
+	DeliveryProof         sql.NullString `json:"delivery_proof"`
+	DeliveryNotes         sql.NullString `json:"delivery_notes"`
+	FailureReason         sql.NullString `json:"failure_reason"`
+	DistanceKm            sql.NullString `json:"distance_km"`
+	DurationMinutes       sql.NullInt32  `json:"duration_minutes"`
+	IsDelayed             sql.NullBool   `json:"is_delayed"`
+	DeletedAt             sql.NullTime   `json:"deleted_at"`
+	CreatedAt             time.Time      `json:"created_at"`
+	UpdatedAt             time.Time      `json:"updated_at"`
 }
 
+// Driver-specific information and metrics
 type Driver struct {
-	ID            uuid.UUID `json:"id"`
-	UserID        string    `json:"user_id"`
-	LicenseNumber string    `json:"license_number"`
-	LicenseExpiry time.Time `json:"license_expiry"`
-	// motorcycle, car, van, truck
-	VehicleType  string `json:"vehicle_type"`
-	VehiclePlate string `json:"vehicle_plate"`
-	// in kg or cubic meters
-	VehicleCapacity string `json:"vehicle_capacity"`
-	// online, offline, on_delivery, break
-	Status string `json:"status"`
-	// average rating out of 5
-	Rating          sql.NullString `json:"rating"`
-	TotalDeliveries sql.NullInt32  `json:"total_deliveries"`
-	// pending, approved, rejected
-	BackgroundCheckStatus string       `json:"background_check_status"`
-	BackgroundCheckDate   sql.NullTime `json:"background_check_date"`
-	CreatedAt             time.Time    `json:"created_at"`
-	UpdatedAt             time.Time    `json:"updated_at"`
-	DriverID              string       `json:"driver_id"`
+	ID                    uuid.UUID             `json:"id"`
+	DriverID              string                `json:"driver_id"`
+	UserID                string                `json:"user_id"`
+	LicenseNumber         string                `json:"license_number"`
+	LicenseExpiry         time.Time             `json:"license_expiry"`
+	VehicleType           DriverVehicleType     `json:"vehicle_type"`
+	VehiclePlate          string                `json:"vehicle_plate"`
+	VehicleModel          sql.NullString        `json:"vehicle_model"`
+	VehicleYear           sql.NullInt32         `json:"vehicle_year"`
+	VehicleCapacity       string                `json:"vehicle_capacity"`
+	Status                DriverStatus          `json:"status"`
+	Rating                sql.NullString        `json:"rating"`
+	TotalDeliveries       sql.NullInt32         `json:"total_deliveries"`
+	CompletedDeliveries   sql.NullInt32         `json:"completed_deliveries"`
+	BackgroundCheckStatus BackgroundCheckStatus `json:"background_check_status"`
+	BackgroundCheckDate   sql.NullTime          `json:"background_check_date"`
+	ProfileVerified       sql.NullBool          `json:"profile_verified"`
+	DocumentsVerified     sql.NullBool          `json:"documents_verified"`
+	CurrentLatitude       sql.NullString        `json:"current_latitude"`
+	CurrentLongitude      sql.NullString        `json:"current_longitude"`
+	CurrentLocation       interface{}           `json:"current_location"`
+	LastLocationUpdate    sql.NullTime          `json:"last_location_update"`
+	CreatedAt             time.Time             `json:"created_at"`
+	UpdatedAt             time.Time             `json:"updated_at"`
 }
 
+// Real-time driver GPS location history
 type DriverLocation struct {
-	ID        uuid.UUID `json:"id"`
-	DriverID  string    `json:"driver_id"`
-	Latitude  string    `json:"latitude"`
-	Longitude string    `json:"longitude"`
-	// direction in degrees
-	Heading sql.NullString `json:"heading"`
-	// speed in km/h
-	Speed sql.NullString `json:"speed"`
-	// GPS accuracy in meters
+	ID           uuid.UUID      `json:"id"`
+	LocationID   string         `json:"location_id"`
+	DriverID     string         `json:"driver_id"`
+	Latitude     string         `json:"latitude"`
+	Longitude    string         `json:"longitude"`
+	Location     interface{}    `json:"location"`
+	Heading      sql.NullString `json:"heading"`
+	Speed        sql.NullString `json:"speed"`
 	Accuracy     sql.NullString `json:"accuracy"`
 	BatteryLevel sql.NullInt32  `json:"battery_level"`
 	RecordedAt   time.Time      `json:"recorded_at"`
 	CreatedAt    time.Time      `json:"created_at"`
-	LocationID   string         `json:"location_id"`
+}
+
+type DriverPerformanceView struct {
+	DriverID               string            `json:"driver_id"`
+	DriverName             interface{}       `json:"driver_name"`
+	VehicleType            DriverVehicleType `json:"vehicle_type"`
+	Status                 DriverStatus      `json:"status"`
+	Rating                 sql.NullString    `json:"rating"`
+	TotalDeliveries        sql.NullInt32     `json:"total_deliveries"`
+	CompletedDeliveries    sql.NullInt32     `json:"completed_deliveries"`
+	CompletionRate         int32             `json:"completion_rate"`
+	ActiveDeliveries       int64             `json:"active_deliveries"`
+	AvgDeliveryTimeMinutes float64           `json:"avg_delivery_time_minutes"`
+	TotalDistanceKm        int64             `json:"total_distance_km"`
+	DelayedDeliveries      int64             `json:"delayed_deliveries"`
+	DriverSince            time.Time         `json:"driver_since"`
 }
 
 type Notification struct {
-	ID     uuid.UUID `json:"id"`
-	UserID string    `json:"user_id"`
-	// package_update, delivery_assigned, delivery_completed, etc
-	NotificationType string `json:"notification_type"`
-	Title            string `json:"title"`
-	Message          string `json:"message"`
-	// package_id, delivery_id, etc
-	ReferenceID    sql.NullString `json:"reference_id"`
-	IsRead         sql.NullBool   `json:"is_read"`
-	SentAt         time.Time      `json:"sent_at"`
-	ReadAt         sql.NullTime   `json:"read_at"`
-	CreatedAt      time.Time      `json:"created_at"`
-	NotificationID string         `json:"notification_id"`
+	ID               uuid.UUID             `json:"id"`
+	NotificationID   string                `json:"notification_id"`
+	UserID           string                `json:"user_id"`
+	NotificationType string                `json:"notification_type"`
+	Title            string                `json:"title"`
+	Message          string                `json:"message"`
+	ReferenceID      sql.NullString        `json:"reference_id"`
+	ReferenceType    sql.NullString        `json:"reference_type"`
+	IsRead           sql.NullBool          `json:"is_read"`
+	SentAt           time.Time             `json:"sent_at"`
+	ReadAt           sql.NullTime          `json:"read_at"`
+	Metadata         pqtype.NullRawMessage `json:"metadata"`
+	CreatedAt        time.Time             `json:"created_at"`
 }
 
+// Package/shipment details
 type Package struct {
-	ID             uuid.UUID `json:"id"`
-	CustomerID     string    `json:"customer_id"`
-	TrackingNumber string    `json:"tracking_number"`
-	Description    string    `json:"description"`
-	// in kg
-	Weight string `json:"weight"`
-	// LxWxH in cm
-	Dimensions sql.NullString `json:"dimensions"`
-	// documents, electronics, food, fragile, etc
-	Category string `json:"category"`
-	// declared value for insurance
-	Value sql.NullString `json:"value"`
-	// express, standard, economy
-	Priority string `json:"priority"`
-	// fragile, perishable, hazardous, etc
-	SpecialHandling   sql.NullString `json:"special_handling"`
-	PickupAddressID   string         `json:"pickup_address_id"`
-	DeliveryAddressID string         `json:"delivery_address_id"`
-	// pending, picked_up, in_transit, out_for_delivery, delivered, failed, cancelled
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	PackageID string    `json:"package_id"`
+	ID                uuid.UUID       `json:"id"`
+	PackageID         string          `json:"package_id"`
+	TrackingNumber    string          `json:"tracking_number"`
+	CustomerID        string          `json:"customer_id"`
+	Description       string          `json:"description"`
+	Weight            string          `json:"weight"`
+	Dimensions        sql.NullString  `json:"dimensions"`
+	Category          string          `json:"category"`
+	Value             sql.NullString  `json:"value"`
+	Priority          PackagePriority `json:"priority"`
+	SpecialHandling   sql.NullString  `json:"special_handling"`
+	Fragile           sql.NullBool    `json:"fragile"`
+	RequiresSignature sql.NullBool    `json:"requires_signature"`
+	PickupAddressID   string          `json:"pickup_address_id"`
+	DeliveryAddressID string          `json:"delivery_address_id"`
+	Status            PackageStatus   `json:"status"`
+	DeletedAt         sql.NullTime    `json:"deleted_at"`
+	CreatedAt         time.Time       `json:"created_at"`
+	UpdatedAt         time.Time       `json:"updated_at"`
+}
+
+type PackageTrackingSummary struct {
+	PackageID             string             `json:"package_id"`
+	TrackingNumber        string             `json:"tracking_number"`
+	Status                PackageStatus      `json:"status"`
+	Priority              PackagePriority    `json:"priority"`
+	CustomerID            string             `json:"customer_id"`
+	CustomerName          interface{}        `json:"customer_name"`
+	DeliveryID            sql.NullString     `json:"delivery_id"`
+	DriverID              sql.NullString     `json:"driver_id"`
+	DriverName            interface{}        `json:"driver_name"`
+	DeliveryStatus        NullDeliveryStatus `json:"delivery_status"`
+	EstimatedDeliveryTime sql.NullTime       `json:"estimated_delivery_time"`
+	TotalEvents           int64              `json:"total_events"`
+	LastEventTime         interface{}        `json:"last_event_time"`
+	CreatedAt             time.Time          `json:"created_at"`
 }
 
 type Payment struct {
-	ID            uuid.UUID      `json:"id"`
-	CustomerID    string         `json:"customer_id"`
-	DeliveryID    sql.NullString `json:"delivery_id"`
-	Amount        string         `json:"amount"`
-	Currency      string         `json:"currency"`
-	PaymentMethod string         `json:"payment_method"`
-	TransactionID sql.NullString `json:"transaction_id"`
-	// pending, completed, failed, refunded
-	Status      string       `json:"status"`
-	PaymentDate sql.NullTime `json:"payment_date"`
-	CreatedAt   time.Time    `json:"created_at"`
-	UpdatedAt   time.Time    `json:"updated_at"`
-	PaymentID   string       `json:"payment_id"`
+	ID            uuid.UUID         `json:"id"`
+	PaymentID     string            `json:"payment_id"`
+	CustomerID    string            `json:"customer_id"`
+	DeliveryID    sql.NullString    `json:"delivery_id"`
+	PackageID     sql.NullString    `json:"package_id"`
+	Amount        string            `json:"amount"`
+	Currency      string            `json:"currency"`
+	PaymentMethod PaymentMethodType `json:"payment_method"`
+	TransactionID sql.NullString    `json:"transaction_id"`
+	Status        PaymentStatus     `json:"status"`
+	PaymentDate   sql.NullTime      `json:"payment_date"`
+	CreatedAt     time.Time         `json:"created_at"`
+	UpdatedAt     time.Time         `json:"updated_at"`
 }
 
 type Pricing struct {
-	ID         uuid.UUID `json:"id"`
-	BasePrice  string    `json:"base_price"`
-	PricePerKm string    `json:"price_per_km"`
-	PricePerKg string    `json:"price_per_kg"`
-	// express=2.0, standard=1.0, economy=0.8
-	PriorityMultiplier string `json:"priority_multiplier"`
-	// urban, suburban, rural
-	Zone          string       `json:"zone"`
-	EffectiveFrom time.Time    `json:"effective_from"`
-	EffectiveTo   sql.NullTime `json:"effective_to"`
-	CreatedAt     time.Time    `json:"created_at"`
-	UpdatedAt     time.Time    `json:"updated_at"`
-	PricingID     string       `json:"pricing_id"`
+	ID                 uuid.UUID    `json:"id"`
+	PricingID          string       `json:"pricing_id"`
+	BasePrice          string       `json:"base_price"`
+	PricePerKm         string       `json:"price_per_km"`
+	PricePerKg         string       `json:"price_per_kg"`
+	PriorityMultiplier string       `json:"priority_multiplier"`
+	Zone               ZoneType     `json:"zone"`
+	EffectiveFrom      time.Time    `json:"effective_from"`
+	EffectiveTo        sql.NullTime `json:"effective_to"`
+	IsActive           sql.NullBool `json:"is_active"`
+	CreatedAt          time.Time    `json:"created_at"`
+	UpdatedAt          time.Time    `json:"updated_at"`
 }
 
 type Rating struct {
-	ID         uuid.UUID `json:"id"`
-	DeliveryID string    `json:"delivery_id"`
-	// user_id of customer or driver
-	RatedBy string `json:"rated_by"`
-	// user_id being rated
-	RatedUser string `json:"rated_user"`
-	// 1-5 stars
-	Rating  int32          `json:"rating"`
-	Comment sql.NullString `json:"comment"`
-	// driver_rating, customer_rating
-	RatingType string    `json:"rating_type"`
-	CreatedAt  time.Time `json:"created_at"`
-	RatingID   string    `json:"rating_id"`
+	ID         uuid.UUID      `json:"id"`
+	RatingID   string         `json:"rating_id"`
+	DeliveryID string         `json:"delivery_id"`
+	RatedBy    string         `json:"rated_by"`
+	RatedUser  string         `json:"rated_user"`
+	Rating     int32          `json:"rating"`
+	Comment    sql.NullString `json:"comment"`
+	RatingType RatingType     `json:"rating_type"`
+	CreatedAt  time.Time      `json:"created_at"`
 }
 
+// Optimized delivery routes for drivers
 type Route struct {
-	ID            uuid.UUID      `json:"id"`
-	DriverID      string         `json:"driver_id"`
-	RouteName     sql.NullString `json:"route_name"`
-	StartLocation string         `json:"start_location"`
-	EndLocation   sql.NullString `json:"end_location"`
-	// planned, in_progress, completed, cancelled
-	Status                   string         `json:"status"`
+	ID                       uuid.UUID      `json:"id"`
+	RouteID                  string         `json:"route_id"`
+	DriverID                 string         `json:"driver_id"`
+	RouteName                sql.NullString `json:"route_name"`
+	StartLocation            string         `json:"start_location"`
+	EndLocation              sql.NullString `json:"end_location"`
+	Status                   RouteStatus    `json:"status"`
 	TotalDistanceKm          sql.NullString `json:"total_distance_km"`
 	EstimatedDurationMinutes sql.NullInt32  `json:"estimated_duration_minutes"`
 	ActualDurationMinutes    sql.NullInt32  `json:"actual_duration_minutes"`
-	// route efficiency score
-	OptimizationScore sql.NullString `json:"optimization_score"`
-	StartedAt         sql.NullTime   `json:"started_at"`
-	CompletedAt       sql.NullTime   `json:"completed_at"`
-	CreatedAt         time.Time      `json:"created_at"`
-	UpdatedAt         time.Time      `json:"updated_at"`
-	RouteID           string         `json:"route_id"`
+	OptimizationScore        sql.NullString `json:"optimization_score"`
+	TotalStops               sql.NullInt32  `json:"total_stops"`
+	CompletedStops           sql.NullInt32  `json:"completed_stops"`
+	StartedAt                sql.NullTime   `json:"started_at"`
+	CompletedAt              sql.NullTime   `json:"completed_at"`
+	CreatedAt                time.Time      `json:"created_at"`
+	UpdatedAt                time.Time      `json:"updated_at"`
 }
 
 type RouteStop struct {
-	ID         uuid.UUID `json:"id"`
-	RouteID    string    `json:"route_id"`
-	DeliveryID string    `json:"delivery_id"`
-	// order of stops in the route
-	StopSequence int32 `json:"stop_sequence"`
-	// pickup, delivery
-	StopType           string       `json:"stop_type"`
-	AddressID          string       `json:"address_id"`
-	ScheduledArrival   sql.NullTime `json:"scheduled_arrival"`
-	ActualArrival      sql.NullTime `json:"actual_arrival"`
-	ScheduledDeparture sql.NullTime `json:"scheduled_departure"`
-	ActualDeparture    sql.NullTime `json:"actual_departure"`
-	// pending, arrived, completed, skipped
-	Status string `json:"status"`
-	// time spent at stop
-	DwellTimeMinutes sql.NullInt32 `json:"dwell_time_minutes"`
-	CreatedAt        time.Time     `json:"created_at"`
-	UpdatedAt        time.Time     `json:"updated_at"`
-	StopID           string        `json:"stop_id"`
+	ID                 uuid.UUID      `json:"id"`
+	StopID             string         `json:"stop_id"`
+	RouteID            string         `json:"route_id"`
+	DeliveryID         string         `json:"delivery_id"`
+	StopSequence       int32          `json:"stop_sequence"`
+	StopType           StopType       `json:"stop_type"`
+	AddressID          string         `json:"address_id"`
+	ScheduledArrival   sql.NullTime   `json:"scheduled_arrival"`
+	ActualArrival      sql.NullTime   `json:"actual_arrival"`
+	ScheduledDeparture sql.NullTime   `json:"scheduled_departure"`
+	ActualDeparture    sql.NullTime   `json:"actual_departure"`
+	Status             StopStatus     `json:"status"`
+	DwellTimeMinutes   sql.NullInt32  `json:"dwell_time_minutes"`
+	Notes              sql.NullString `json:"notes"`
+	CreatedAt          time.Time      `json:"created_at"`
+	UpdatedAt          time.Time      `json:"updated_at"`
 }
 
+type SchemaVersion struct {
+	Version     string         `json:"version"`
+	AppliedAt   time.Time      `json:"applied_at"`
+	Description sql.NullString `json:"description"`
+}
+
+// Audit trail of package journey
 type TrackingEvent struct {
-	ID         uuid.UUID      `json:"id"`
-	PackageID  string         `json:"package_id"`
-	DeliveryID sql.NullString `json:"delivery_id"`
-	// created, assigned, picked_up, in_transit, out_for_delivery, delivered, exception
-	EventType        string         `json:"event_type"`
-	EventDescription string         `json:"event_description"`
-	Location         sql.NullString `json:"location"`
-	Latitude         sql.NullString `json:"latitude"`
-	Longitude        sql.NullString `json:"longitude"`
-	OccurredAt       time.Time      `json:"occurred_at"`
-	// user_id who created the event
-	CreatedBy sql.NullString `json:"created_by"`
-	CreatedAt time.Time      `json:"created_at"`
-	EventID   string         `json:"event_id"`
+	ID               uuid.UUID             `json:"id"`
+	EventID          string                `json:"event_id"`
+	PackageID        string                `json:"package_id"`
+	DeliveryID       sql.NullString        `json:"delivery_id"`
+	EventType        EventType             `json:"event_type"`
+	EventDescription string                `json:"event_description"`
+	Location         sql.NullString        `json:"location"`
+	Latitude         sql.NullString        `json:"latitude"`
+	Longitude        sql.NullString        `json:"longitude"`
+	LocationPoint    interface{}           `json:"location_point"`
+	OccurredAt       time.Time             `json:"occurred_at"`
+	CreatedBy        sql.NullString        `json:"created_by"`
+	Metadata         pqtype.NullRawMessage `json:"metadata"`
+	CreatedAt        time.Time             `json:"created_at"`
 }
 
+// Base table for all system users
 type User struct {
-	ID        uuid.UUID      `json:"id"`
-	FirstName string         `json:"first_name"`
-	LastName  string         `json:"last_name"`
-	Email     string         `json:"email"`
-	Password  string         `json:"password"`
-	Phone     string         `json:"phone"`
-	Avatar    sql.NullString `json:"avatar"`
-	// admin, dispatcher, customer, driver
-	Role string `json:"role"`
-	// active, suspended, inactive
-	Status       string         `json:"status"`
+	ID           uuid.UUID      `json:"id"`
+	UserID       string         `json:"user_id"`
+	FirstName    string         `json:"first_name"`
+	LastName     string         `json:"last_name"`
+	Email        string         `json:"email"`
+	Password     string         `json:"password"`
+	Phone        string         `json:"phone"`
+	Avatar       sql.NullString `json:"avatar"`
+	Role         UserRole       `json:"role"`
+	Status       UserStatus     `json:"status"`
 	Token        sql.NullString `json:"token"`
 	RefreshToken sql.NullString `json:"refresh_token"`
+	LastLoginAt  sql.NullTime   `json:"last_login_at"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
-	UserID       string         `json:"user_id"`
 }
 
 type VehicleMaintenance struct {
-	ID       uuid.UUID `json:"id"`
-	DriverID string    `json:"driver_id"`
-	// inspection, repair, service
-	MaintenanceType string         `json:"maintenance_type"`
-	Description     string         `json:"description"`
-	Cost            sql.NullString `json:"cost"`
-	ScheduledDate   sql.NullTime   `json:"scheduled_date"`
-	CompletedDate   sql.NullTime   `json:"completed_date"`
-	NextDueDate     sql.NullTime   `json:"next_due_date"`
-	// scheduled, completed, overdue
-	Status        string    `json:"status"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
-	MaintenanceID string    `json:"maintenance_id"`
+	ID              uuid.UUID         `json:"id"`
+	MaintenanceID   string            `json:"maintenance_id"`
+	DriverID        string            `json:"driver_id"`
+	MaintenanceType MaintenanceType   `json:"maintenance_type"`
+	Description     string            `json:"description"`
+	Cost            sql.NullString    `json:"cost"`
+	ScheduledDate   sql.NullTime      `json:"scheduled_date"`
+	CompletedDate   sql.NullTime      `json:"completed_date"`
+	NextDueDate     sql.NullTime      `json:"next_due_date"`
+	Status          MaintenanceStatus `json:"status"`
+	CreatedAt       time.Time         `json:"created_at"`
+	UpdatedAt       time.Time         `json:"updated_at"`
 }

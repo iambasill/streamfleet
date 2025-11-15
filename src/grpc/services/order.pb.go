@@ -7,13 +7,12 @@
 package order
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -28,12 +27,13 @@ type PackageStatus int32
 const (
 	PackageStatus_PACKAGE_STATUS_UNSPECIFIED      PackageStatus = 0
 	PackageStatus_PACKAGE_STATUS_PENDING          PackageStatus = 1
-	PackageStatus_PACKAGE_STATUS_PICKED_UP        PackageStatus = 2
-	PackageStatus_PACKAGE_STATUS_IN_TRANSIT       PackageStatus = 3
-	PackageStatus_PACKAGE_STATUS_OUT_FOR_DELIVERY PackageStatus = 4
-	PackageStatus_PACKAGE_STATUS_DELIVERED        PackageStatus = 5
-	PackageStatus_PACKAGE_STATUS_FAILED           PackageStatus = 6
-	PackageStatus_PACKAGE_STATUS_CANCELLED        PackageStatus = 7
+	PackageStatus_PACKAGE_STATUS_ASSIGNED         PackageStatus = 2
+	PackageStatus_PACKAGE_STATUS_PICKED_UP        PackageStatus = 3
+	PackageStatus_PACKAGE_STATUS_IN_TRANSIT       PackageStatus = 4
+	PackageStatus_PACKAGE_STATUS_OUT_FOR_DELIVERY PackageStatus = 5
+	PackageStatus_PACKAGE_STATUS_DELIVERED        PackageStatus = 6
+	PackageStatus_PACKAGE_STATUS_FAILED           PackageStatus = 7
+	PackageStatus_PACKAGE_STATUS_CANCELLED        PackageStatus = 8
 )
 
 // Enum value maps for PackageStatus.
@@ -41,22 +41,24 @@ var (
 	PackageStatus_name = map[int32]string{
 		0: "PACKAGE_STATUS_UNSPECIFIED",
 		1: "PACKAGE_STATUS_PENDING",
-		2: "PACKAGE_STATUS_PICKED_UP",
-		3: "PACKAGE_STATUS_IN_TRANSIT",
-		4: "PACKAGE_STATUS_OUT_FOR_DELIVERY",
-		5: "PACKAGE_STATUS_DELIVERED",
-		6: "PACKAGE_STATUS_FAILED",
-		7: "PACKAGE_STATUS_CANCELLED",
+		2: "PACKAGE_STATUS_ASSIGNED",
+		3: "PACKAGE_STATUS_PICKED_UP",
+		4: "PACKAGE_STATUS_IN_TRANSIT",
+		5: "PACKAGE_STATUS_OUT_FOR_DELIVERY",
+		6: "PACKAGE_STATUS_DELIVERED",
+		7: "PACKAGE_STATUS_FAILED",
+		8: "PACKAGE_STATUS_CANCELLED",
 	}
 	PackageStatus_value = map[string]int32{
 		"PACKAGE_STATUS_UNSPECIFIED":      0,
 		"PACKAGE_STATUS_PENDING":          1,
-		"PACKAGE_STATUS_PICKED_UP":        2,
-		"PACKAGE_STATUS_IN_TRANSIT":       3,
-		"PACKAGE_STATUS_OUT_FOR_DELIVERY": 4,
-		"PACKAGE_STATUS_DELIVERED":        5,
-		"PACKAGE_STATUS_FAILED":           6,
-		"PACKAGE_STATUS_CANCELLED":        7,
+		"PACKAGE_STATUS_ASSIGNED":         2,
+		"PACKAGE_STATUS_PICKED_UP":        3,
+		"PACKAGE_STATUS_IN_TRANSIT":       4,
+		"PACKAGE_STATUS_OUT_FOR_DELIVERY": 5,
+		"PACKAGE_STATUS_DELIVERED":        6,
+		"PACKAGE_STATUS_FAILED":           7,
+		"PACKAGE_STATUS_CANCELLED":        8,
 	}
 )
 
@@ -139,67 +141,6 @@ func (PackagePriority) EnumDescriptor() ([]byte, []int) {
 	return file_order_proto_rawDescGZIP(), []int{1}
 }
 
-type PackageCategory int32
-
-const (
-	PackageCategory_PACKAGE_CATEGORY_UNSPECIFIED PackageCategory = 0
-	PackageCategory_PACKAGE_CATEGORY_DOCUMENTS   PackageCategory = 1
-	PackageCategory_PACKAGE_CATEGORY_ELECTRONICS PackageCategory = 2
-	PackageCategory_PACKAGE_CATEGORY_FOOD        PackageCategory = 3
-	PackageCategory_PACKAGE_CATEGORY_FRAGILE     PackageCategory = 4
-	PackageCategory_PACKAGE_CATEGORY_CLOTHING    PackageCategory = 5
-	PackageCategory_PACKAGE_CATEGORY_GENERAL     PackageCategory = 6
-)
-
-// Enum value maps for PackageCategory.
-var (
-	PackageCategory_name = map[int32]string{
-		0: "PACKAGE_CATEGORY_UNSPECIFIED",
-		1: "PACKAGE_CATEGORY_DOCUMENTS",
-		2: "PACKAGE_CATEGORY_ELECTRONICS",
-		3: "PACKAGE_CATEGORY_FOOD",
-		4: "PACKAGE_CATEGORY_FRAGILE",
-		5: "PACKAGE_CATEGORY_CLOTHING",
-		6: "PACKAGE_CATEGORY_GENERAL",
-	}
-	PackageCategory_value = map[string]int32{
-		"PACKAGE_CATEGORY_UNSPECIFIED": 0,
-		"PACKAGE_CATEGORY_DOCUMENTS":   1,
-		"PACKAGE_CATEGORY_ELECTRONICS": 2,
-		"PACKAGE_CATEGORY_FOOD":        3,
-		"PACKAGE_CATEGORY_FRAGILE":     4,
-		"PACKAGE_CATEGORY_CLOTHING":    5,
-		"PACKAGE_CATEGORY_GENERAL":     6,
-	}
-)
-
-func (x PackageCategory) Enum() *PackageCategory {
-	p := new(PackageCategory)
-	*p = x
-	return p
-}
-
-func (x PackageCategory) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (PackageCategory) Descriptor() protoreflect.EnumDescriptor {
-	return file_order_proto_enumTypes[2].Descriptor()
-}
-
-func (PackageCategory) Type() protoreflect.EnumType {
-	return &file_order_proto_enumTypes[2]
-}
-
-func (x PackageCategory) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use PackageCategory.Descriptor instead.
-func (PackageCategory) EnumDescriptor() ([]byte, []int) {
-	return file_order_proto_rawDescGZIP(), []int{2}
-}
-
 type DeliveryStatus int32
 
 const (
@@ -242,11 +183,11 @@ func (x DeliveryStatus) String() string {
 }
 
 func (DeliveryStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_order_proto_enumTypes[3].Descriptor()
+	return file_order_proto_enumTypes[2].Descriptor()
 }
 
 func (DeliveryStatus) Type() protoreflect.EnumType {
-	return &file_order_proto_enumTypes[3]
+	return &file_order_proto_enumTypes[2]
 }
 
 func (x DeliveryStatus) Number() protoreflect.EnumNumber {
@@ -255,7 +196,7 @@ func (x DeliveryStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DeliveryStatus.Descriptor instead.
 func (DeliveryStatus) EnumDescriptor() ([]byte, []int) {
-	return file_order_proto_rawDescGZIP(), []int{3}
+	return file_order_proto_rawDescGZIP(), []int{2}
 }
 
 type TrackingEventType int32
@@ -269,7 +210,8 @@ const (
 	TrackingEventType_TRACKING_EVENT_TYPE_OUT_FOR_DELIVERY TrackingEventType = 5
 	TrackingEventType_TRACKING_EVENT_TYPE_DELIVERED        TrackingEventType = 6
 	TrackingEventType_TRACKING_EVENT_TYPE_EXCEPTION        TrackingEventType = 7
-	TrackingEventType_TRACKING_EVENT_TYPE_CANCELLED        TrackingEventType = 8
+	TrackingEventType_TRACKING_EVENT_TYPE_FAILED           TrackingEventType = 8
+	TrackingEventType_TRACKING_EVENT_TYPE_CANCELLED        TrackingEventType = 9
 )
 
 // Enum value maps for TrackingEventType.
@@ -283,7 +225,8 @@ var (
 		5: "TRACKING_EVENT_TYPE_OUT_FOR_DELIVERY",
 		6: "TRACKING_EVENT_TYPE_DELIVERED",
 		7: "TRACKING_EVENT_TYPE_EXCEPTION",
-		8: "TRACKING_EVENT_TYPE_CANCELLED",
+		8: "TRACKING_EVENT_TYPE_FAILED",
+		9: "TRACKING_EVENT_TYPE_CANCELLED",
 	}
 	TrackingEventType_value = map[string]int32{
 		"TRACKING_EVENT_TYPE_UNSPECIFIED":      0,
@@ -294,7 +237,8 @@ var (
 		"TRACKING_EVENT_TYPE_OUT_FOR_DELIVERY": 5,
 		"TRACKING_EVENT_TYPE_DELIVERED":        6,
 		"TRACKING_EVENT_TYPE_EXCEPTION":        7,
-		"TRACKING_EVENT_TYPE_CANCELLED":        8,
+		"TRACKING_EVENT_TYPE_FAILED":           8,
+		"TRACKING_EVENT_TYPE_CANCELLED":        9,
 	}
 )
 
@@ -309,11 +253,11 @@ func (x TrackingEventType) String() string {
 }
 
 func (TrackingEventType) Descriptor() protoreflect.EnumDescriptor {
-	return file_order_proto_enumTypes[4].Descriptor()
+	return file_order_proto_enumTypes[3].Descriptor()
 }
 
 func (TrackingEventType) Type() protoreflect.EnumType {
-	return &file_order_proto_enumTypes[4]
+	return &file_order_proto_enumTypes[3]
 }
 
 func (x TrackingEventType) Number() protoreflect.EnumNumber {
@@ -322,7 +266,166 @@ func (x TrackingEventType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use TrackingEventType.Descriptor instead.
 func (TrackingEventType) EnumDescriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{3}
+}
+
+type RouteStatus int32
+
+const (
+	RouteStatus_ROUTE_STATUS_UNSPECIFIED RouteStatus = 0
+	RouteStatus_ROUTE_STATUS_PLANNED     RouteStatus = 1
+	RouteStatus_ROUTE_STATUS_IN_PROGRESS RouteStatus = 2
+	RouteStatus_ROUTE_STATUS_COMPLETED   RouteStatus = 3
+	RouteStatus_ROUTE_STATUS_CANCELLED   RouteStatus = 4
+)
+
+// Enum value maps for RouteStatus.
+var (
+	RouteStatus_name = map[int32]string{
+		0: "ROUTE_STATUS_UNSPECIFIED",
+		1: "ROUTE_STATUS_PLANNED",
+		2: "ROUTE_STATUS_IN_PROGRESS",
+		3: "ROUTE_STATUS_COMPLETED",
+		4: "ROUTE_STATUS_CANCELLED",
+	}
+	RouteStatus_value = map[string]int32{
+		"ROUTE_STATUS_UNSPECIFIED": 0,
+		"ROUTE_STATUS_PLANNED":     1,
+		"ROUTE_STATUS_IN_PROGRESS": 2,
+		"ROUTE_STATUS_COMPLETED":   3,
+		"ROUTE_STATUS_CANCELLED":   4,
+	}
+)
+
+func (x RouteStatus) Enum() *RouteStatus {
+	p := new(RouteStatus)
+	*p = x
+	return p
+}
+
+func (x RouteStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RouteStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_order_proto_enumTypes[4].Descriptor()
+}
+
+func (RouteStatus) Type() protoreflect.EnumType {
+	return &file_order_proto_enumTypes[4]
+}
+
+func (x RouteStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use RouteStatus.Descriptor instead.
+func (RouteStatus) EnumDescriptor() ([]byte, []int) {
 	return file_order_proto_rawDescGZIP(), []int{4}
+}
+
+type StopType int32
+
+const (
+	StopType_STOP_TYPE_UNSPECIFIED StopType = 0
+	StopType_STOP_TYPE_PICKUP      StopType = 1
+	StopType_STOP_TYPE_DELIVERY    StopType = 2
+)
+
+// Enum value maps for StopType.
+var (
+	StopType_name = map[int32]string{
+		0: "STOP_TYPE_UNSPECIFIED",
+		1: "STOP_TYPE_PICKUP",
+		2: "STOP_TYPE_DELIVERY",
+	}
+	StopType_value = map[string]int32{
+		"STOP_TYPE_UNSPECIFIED": 0,
+		"STOP_TYPE_PICKUP":      1,
+		"STOP_TYPE_DELIVERY":    2,
+	}
+)
+
+func (x StopType) Enum() *StopType {
+	p := new(StopType)
+	*p = x
+	return p
+}
+
+func (x StopType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (StopType) Descriptor() protoreflect.EnumDescriptor {
+	return file_order_proto_enumTypes[5].Descriptor()
+}
+
+func (StopType) Type() protoreflect.EnumType {
+	return &file_order_proto_enumTypes[5]
+}
+
+func (x StopType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use StopType.Descriptor instead.
+func (StopType) EnumDescriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{5}
+}
+
+type StopStatus int32
+
+const (
+	StopStatus_STOP_STATUS_UNSPECIFIED StopStatus = 0
+	StopStatus_STOP_STATUS_PENDING     StopStatus = 1
+	StopStatus_STOP_STATUS_ARRIVED     StopStatus = 2
+	StopStatus_STOP_STATUS_COMPLETED   StopStatus = 3
+	StopStatus_STOP_STATUS_SKIPPED     StopStatus = 4
+)
+
+// Enum value maps for StopStatus.
+var (
+	StopStatus_name = map[int32]string{
+		0: "STOP_STATUS_UNSPECIFIED",
+		1: "STOP_STATUS_PENDING",
+		2: "STOP_STATUS_ARRIVED",
+		3: "STOP_STATUS_COMPLETED",
+		4: "STOP_STATUS_SKIPPED",
+	}
+	StopStatus_value = map[string]int32{
+		"STOP_STATUS_UNSPECIFIED": 0,
+		"STOP_STATUS_PENDING":     1,
+		"STOP_STATUS_ARRIVED":     2,
+		"STOP_STATUS_COMPLETED":   3,
+		"STOP_STATUS_SKIPPED":     4,
+	}
+)
+
+func (x StopStatus) Enum() *StopStatus {
+	p := new(StopStatus)
+	*p = x
+	return p
+}
+
+func (x StopStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (StopStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_order_proto_enumTypes[6].Descriptor()
+}
+
+func (StopStatus) Type() protoreflect.EnumType {
+	return &file_order_proto_enumTypes[6]
+}
+
+func (x StopStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use StopStatus.Descriptor instead.
+func (StopStatus) EnumDescriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{6}
 }
 
 type Address struct {
@@ -340,8 +443,9 @@ type Address struct {
 	Longitude     float64                `protobuf:"fixed64,11,opt,name=longitude,proto3" json:"longitude,omitempty"`
 	Instructions  string                 `protobuf:"bytes,12,opt,name=instructions,proto3" json:"instructions,omitempty"`
 	IsDefault     bool                   `protobuf:"varint,13,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	IsActive      bool                   `protobuf:"varint,14,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -467,6 +571,13 @@ func (x *Address) GetIsDefault() bool {
 	return false
 }
 
+func (x *Address) GetIsActive() bool {
+	if x != nil {
+		return x.IsActive
+	}
+	return false
+}
+
 func (x *Address) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
@@ -490,15 +601,17 @@ type Package struct {
 	Description       string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
 	Weight            float64                `protobuf:"fixed64,6,opt,name=weight,proto3" json:"weight,omitempty"`
 	Dimensions        string                 `protobuf:"bytes,7,opt,name=dimensions,proto3" json:"dimensions,omitempty"`
-	Category          PackageCategory        `protobuf:"varint,8,opt,name=category,proto3,enum=order.PackageCategory" json:"category,omitempty"`
+	Category          string                 `protobuf:"bytes,8,opt,name=category,proto3" json:"category,omitempty"`
 	Value             float64                `protobuf:"fixed64,9,opt,name=value,proto3" json:"value,omitempty"`
 	Priority          PackagePriority        `protobuf:"varint,10,opt,name=priority,proto3,enum=order.PackagePriority" json:"priority,omitempty"`
 	SpecialHandling   string                 `protobuf:"bytes,11,opt,name=special_handling,json=specialHandling,proto3" json:"special_handling,omitempty"`
-	PickupAddressId   string                 `protobuf:"bytes,12,opt,name=pickup_address_id,json=pickupAddressId,proto3" json:"pickup_address_id,omitempty"`
-	DeliveryAddressId string                 `protobuf:"bytes,13,opt,name=delivery_address_id,json=deliveryAddressId,proto3" json:"delivery_address_id,omitempty"`
-	Status            PackageStatus          `protobuf:"varint,14,opt,name=status,proto3,enum=order.PackageStatus" json:"status,omitempty"`
-	CreatedAt         *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt         *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Fragile           bool                   `protobuf:"varint,12,opt,name=fragile,proto3" json:"fragile,omitempty"`
+	RequiresSignature bool                   `protobuf:"varint,13,opt,name=requires_signature,json=requiresSignature,proto3" json:"requires_signature,omitempty"`
+	PickupAddressId   string                 `protobuf:"bytes,14,opt,name=pickup_address_id,json=pickupAddressId,proto3" json:"pickup_address_id,omitempty"`
+	DeliveryAddressId string                 `protobuf:"bytes,15,opt,name=delivery_address_id,json=deliveryAddressId,proto3" json:"delivery_address_id,omitempty"`
+	Status            PackageStatus          `protobuf:"varint,16,opt,name=status,proto3,enum=order.PackageStatus" json:"status,omitempty"`
+	CreatedAt         *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt         *timestamppb.Timestamp `protobuf:"bytes,18,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -582,11 +695,11 @@ func (x *Package) GetDimensions() string {
 	return ""
 }
 
-func (x *Package) GetCategory() PackageCategory {
+func (x *Package) GetCategory() string {
 	if x != nil {
 		return x.Category
 	}
-	return PackageCategory_PACKAGE_CATEGORY_UNSPECIFIED
+	return ""
 }
 
 func (x *Package) GetValue() float64 {
@@ -608,6 +721,20 @@ func (x *Package) GetSpecialHandling() string {
 		return x.SpecialHandling
 	}
 	return ""
+}
+
+func (x *Package) GetFragile() bool {
+	if x != nil {
+		return x.Fragile
+	}
+	return false
+}
+
+func (x *Package) GetRequiresSignature() bool {
+	if x != nil {
+		return x.RequiresSignature
+	}
+	return false
 }
 
 func (x *Package) GetPickupAddressId() string {
@@ -712,6 +839,7 @@ type PackageFullDetails struct {
 	DeliveryAddress *Address               `protobuf:"bytes,3,opt,name=delivery_address,json=deliveryAddress,proto3" json:"delivery_address,omitempty"`
 	Customer        *CustomerInfo          `protobuf:"bytes,4,opt,name=customer,proto3" json:"customer,omitempty"`
 	Delivery        *DeliveryInfo          `protobuf:"bytes,5,opt,name=delivery,proto3" json:"delivery,omitempty"`
+	TrackingEvents  []*TrackingEvent       `protobuf:"bytes,6,rep,name=tracking_events,json=trackingEvents,proto3" json:"tracking_events,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -781,6 +909,13 @@ func (x *PackageFullDetails) GetDelivery() *DeliveryInfo {
 	return nil
 }
 
+func (x *PackageFullDetails) GetTrackingEvents() []*TrackingEvent {
+	if x != nil {
+		return x.TrackingEvents
+	}
+	return nil
+}
+
 type CustomerInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CustomerId    string                 `protobuf:"bytes,1,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
@@ -789,6 +924,7 @@ type CustomerInfo struct {
 	LastName      string                 `protobuf:"bytes,4,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
 	Email         string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
 	Phone         string                 `protobuf:"bytes,6,opt,name=phone,proto3" json:"phone,omitempty"`
+	BusinessType  string                 `protobuf:"bytes,7,opt,name=business_type,json=businessType,proto3" json:"business_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -865,6 +1001,13 @@ func (x *CustomerInfo) GetPhone() string {
 	return ""
 }
 
+func (x *CustomerInfo) GetBusinessType() string {
+	if x != nil {
+		return x.BusinessType
+	}
+	return ""
+}
+
 type Delivery struct {
 	state                 protoimpl.MessageState `protogen:"open.v1"`
 	Id                    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -878,13 +1021,16 @@ type Delivery struct {
 	EstimatedDeliveryTime *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=estimated_delivery_time,json=estimatedDeliveryTime,proto3" json:"estimated_delivery_time,omitempty"`
 	ActualDeliveryTime    *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=actual_delivery_time,json=actualDeliveryTime,proto3" json:"actual_delivery_time,omitempty"`
 	DeliveryStatus        DeliveryStatus         `protobuf:"varint,11,opt,name=delivery_status,json=deliveryStatus,proto3,enum=order.DeliveryStatus" json:"delivery_status,omitempty"`
-	DeliveryProof         string                 `protobuf:"bytes,12,opt,name=delivery_proof,json=deliveryProof,proto3" json:"delivery_proof,omitempty"`
-	DeliveryNotes         string                 `protobuf:"bytes,13,opt,name=delivery_notes,json=deliveryNotes,proto3" json:"delivery_notes,omitempty"`
-	FailureReason         string                 `protobuf:"bytes,14,opt,name=failure_reason,json=failureReason,proto3" json:"failure_reason,omitempty"`
-	DistanceKm            float64                `protobuf:"fixed64,15,opt,name=distance_km,json=distanceKm,proto3" json:"distance_km,omitempty"`
-	DurationMinutes       int32                  `protobuf:"varint,16,opt,name=duration_minutes,json=durationMinutes,proto3" json:"duration_minutes,omitempty"`
-	CreatedAt             *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt             *timestamppb.Timestamp `protobuf:"bytes,18,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	PickupSignature       string                 `protobuf:"bytes,12,opt,name=pickup_signature,json=pickupSignature,proto3" json:"pickup_signature,omitempty"`
+	DeliverySignature     string                 `protobuf:"bytes,13,opt,name=delivery_signature,json=deliverySignature,proto3" json:"delivery_signature,omitempty"`
+	DeliveryProof         string                 `protobuf:"bytes,14,opt,name=delivery_proof,json=deliveryProof,proto3" json:"delivery_proof,omitempty"`
+	DeliveryNotes         string                 `protobuf:"bytes,15,opt,name=delivery_notes,json=deliveryNotes,proto3" json:"delivery_notes,omitempty"`
+	FailureReason         string                 `protobuf:"bytes,16,opt,name=failure_reason,json=failureReason,proto3" json:"failure_reason,omitempty"`
+	DistanceKm            float64                `protobuf:"fixed64,17,opt,name=distance_km,json=distanceKm,proto3" json:"distance_km,omitempty"`
+	DurationMinutes       int32                  `protobuf:"varint,18,opt,name=duration_minutes,json=durationMinutes,proto3" json:"duration_minutes,omitempty"`
+	IsDelayed             bool                   `protobuf:"varint,19,opt,name=is_delayed,json=isDelayed,proto3" json:"is_delayed,omitempty"`
+	CreatedAt             *timestamppb.Timestamp `protobuf:"bytes,20,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt             *timestamppb.Timestamp `protobuf:"bytes,21,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -996,6 +1142,20 @@ func (x *Delivery) GetDeliveryStatus() DeliveryStatus {
 	return DeliveryStatus_DELIVERY_STATUS_UNSPECIFIED
 }
 
+func (x *Delivery) GetPickupSignature() string {
+	if x != nil {
+		return x.PickupSignature
+	}
+	return ""
+}
+
+func (x *Delivery) GetDeliverySignature() string {
+	if x != nil {
+		return x.DeliverySignature
+	}
+	return ""
+}
+
 func (x *Delivery) GetDeliveryProof() string {
 	if x != nil {
 		return x.DeliveryProof
@@ -1029,6 +1189,13 @@ func (x *Delivery) GetDurationMinutes() int32 {
 		return x.DurationMinutes
 	}
 	return 0
+}
+
+func (x *Delivery) GetIsDelayed() bool {
+	if x != nil {
+		return x.IsDelayed
+	}
+	return false
 }
 
 func (x *Delivery) GetCreatedAt() *timestamppb.Timestamp {
@@ -1105,7 +1272,9 @@ type DriverInfo struct {
 	Phone         string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
 	VehicleType   string                 `protobuf:"bytes,5,opt,name=vehicle_type,json=vehicleType,proto3" json:"vehicle_type,omitempty"`
 	VehiclePlate  string                 `protobuf:"bytes,6,opt,name=vehicle_plate,json=vehiclePlate,proto3" json:"vehicle_plate,omitempty"`
-	Rating        float64                `protobuf:"fixed64,7,opt,name=rating,proto3" json:"rating,omitempty"`
+	VehicleModel  string                 `protobuf:"bytes,7,opt,name=vehicle_model,json=vehicleModel,proto3" json:"vehicle_model,omitempty"`
+	Rating        float64                `protobuf:"fixed64,8,opt,name=rating,proto3" json:"rating,omitempty"`
+	Status        string                 `protobuf:"bytes,9,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1182,11 +1351,25 @@ func (x *DriverInfo) GetVehiclePlate() string {
 	return ""
 }
 
+func (x *DriverInfo) GetVehicleModel() string {
+	if x != nil {
+		return x.VehicleModel
+	}
+	return ""
+}
+
 func (x *DriverInfo) GetRating() float64 {
 	if x != nil {
 		return x.Rating
 	}
 	return 0
+}
+
+func (x *DriverInfo) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
 }
 
 type DeliveryFullDetails struct {
@@ -1197,6 +1380,7 @@ type DeliveryFullDetails struct {
 	DeliveryAddress *Address               `protobuf:"bytes,4,opt,name=delivery_address,json=deliveryAddress,proto3" json:"delivery_address,omitempty"`
 	Driver          *DriverInfo            `protobuf:"bytes,5,opt,name=driver,proto3" json:"driver,omitempty"`
 	Customer        *CustomerInfo          `protobuf:"bytes,6,opt,name=customer,proto3" json:"customer,omitempty"`
+	TrackingEvents  []*TrackingEvent       `protobuf:"bytes,7,rep,name=tracking_events,json=trackingEvents,proto3" json:"tracking_events,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -1273,6 +1457,13 @@ func (x *DeliveryFullDetails) GetCustomer() *CustomerInfo {
 	return nil
 }
 
+func (x *DeliveryFullDetails) GetTrackingEvents() []*TrackingEvent {
+	if x != nil {
+		return x.TrackingEvents
+	}
+	return nil
+}
+
 type TrackingEvent struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1286,7 +1477,8 @@ type TrackingEvent struct {
 	Longitude        float64                `protobuf:"fixed64,9,opt,name=longitude,proto3" json:"longitude,omitempty"`
 	OccurredAt       *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
 	CreatedBy        string                 `protobuf:"bytes,11,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
-	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Metadata         string                 `protobuf:"bytes,12,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1398,6 +1590,13 @@ func (x *TrackingEvent) GetCreatedBy() string {
 	return ""
 }
 
+func (x *TrackingEvent) GetMetadata() string {
+	if x != nil {
+		return x.Metadata
+	}
+	return ""
+}
+
 func (x *TrackingEvent) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
@@ -1413,15 +1612,17 @@ type Route struct {
 	RouteName                string                 `protobuf:"bytes,4,opt,name=route_name,json=routeName,proto3" json:"route_name,omitempty"`
 	StartLocation            string                 `protobuf:"bytes,5,opt,name=start_location,json=startLocation,proto3" json:"start_location,omitempty"`
 	EndLocation              string                 `protobuf:"bytes,6,opt,name=end_location,json=endLocation,proto3" json:"end_location,omitempty"`
-	Status                   string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
+	Status                   RouteStatus            `protobuf:"varint,7,opt,name=status,proto3,enum=order.RouteStatus" json:"status,omitempty"`
 	TotalDistanceKm          float64                `protobuf:"fixed64,8,opt,name=total_distance_km,json=totalDistanceKm,proto3" json:"total_distance_km,omitempty"`
 	EstimatedDurationMinutes int32                  `protobuf:"varint,9,opt,name=estimated_duration_minutes,json=estimatedDurationMinutes,proto3" json:"estimated_duration_minutes,omitempty"`
 	ActualDurationMinutes    int32                  `protobuf:"varint,10,opt,name=actual_duration_minutes,json=actualDurationMinutes,proto3" json:"actual_duration_minutes,omitempty"`
 	OptimizationScore        float64                `protobuf:"fixed64,11,opt,name=optimization_score,json=optimizationScore,proto3" json:"optimization_score,omitempty"`
-	StartedAt                *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
-	CompletedAt              *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
-	CreatedAt                *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt                *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	TotalStops               int32                  `protobuf:"varint,12,opt,name=total_stops,json=totalStops,proto3" json:"total_stops,omitempty"`
+	CompletedStops           int32                  `protobuf:"varint,13,opt,name=completed_stops,json=completedStops,proto3" json:"completed_stops,omitempty"`
+	StartedAt                *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
+	CompletedAt              *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
+	CreatedAt                *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt                *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -1498,11 +1699,11 @@ func (x *Route) GetEndLocation() string {
 	return ""
 }
 
-func (x *Route) GetStatus() string {
+func (x *Route) GetStatus() RouteStatus {
 	if x != nil {
 		return x.Status
 	}
-	return ""
+	return RouteStatus_ROUTE_STATUS_UNSPECIFIED
 }
 
 func (x *Route) GetTotalDistanceKm() float64 {
@@ -1529,6 +1730,20 @@ func (x *Route) GetActualDurationMinutes() int32 {
 func (x *Route) GetOptimizationScore() float64 {
 	if x != nil {
 		return x.OptimizationScore
+	}
+	return 0
+}
+
+func (x *Route) GetTotalStops() int32 {
+	if x != nil {
+		return x.TotalStops
+	}
+	return 0
+}
+
+func (x *Route) GetCompletedStops() int32 {
+	if x != nil {
+		return x.CompletedStops
 	}
 	return 0
 }
@@ -1568,16 +1783,17 @@ type RouteStop struct {
 	RouteId            string                 `protobuf:"bytes,3,opt,name=route_id,json=routeId,proto3" json:"route_id,omitempty"`
 	DeliveryId         string                 `protobuf:"bytes,4,opt,name=delivery_id,json=deliveryId,proto3" json:"delivery_id,omitempty"`
 	StopSequence       int32                  `protobuf:"varint,5,opt,name=stop_sequence,json=stopSequence,proto3" json:"stop_sequence,omitempty"`
-	StopType           string                 `protobuf:"bytes,6,opt,name=stop_type,json=stopType,proto3" json:"stop_type,omitempty"`
+	StopType           StopType               `protobuf:"varint,6,opt,name=stop_type,json=stopType,proto3,enum=order.StopType" json:"stop_type,omitempty"`
 	AddressId          string                 `protobuf:"bytes,7,opt,name=address_id,json=addressId,proto3" json:"address_id,omitempty"`
 	ScheduledArrival   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=scheduled_arrival,json=scheduledArrival,proto3" json:"scheduled_arrival,omitempty"`
 	ActualArrival      *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=actual_arrival,json=actualArrival,proto3" json:"actual_arrival,omitempty"`
 	ScheduledDeparture *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=scheduled_departure,json=scheduledDeparture,proto3" json:"scheduled_departure,omitempty"`
 	ActualDeparture    *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=actual_departure,json=actualDeparture,proto3" json:"actual_departure,omitempty"`
-	Status             string                 `protobuf:"bytes,12,opt,name=status,proto3" json:"status,omitempty"`
+	Status             StopStatus             `protobuf:"varint,12,opt,name=status,proto3,enum=order.StopStatus" json:"status,omitempty"`
 	DwellTimeMinutes   int32                  `protobuf:"varint,13,opt,name=dwell_time_minutes,json=dwellTimeMinutes,proto3" json:"dwell_time_minutes,omitempty"`
-	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt          *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Notes              string                 `protobuf:"bytes,14,opt,name=notes,proto3" json:"notes,omitempty"`
+	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt          *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -1647,11 +1863,11 @@ func (x *RouteStop) GetStopSequence() int32 {
 	return 0
 }
 
-func (x *RouteStop) GetStopType() string {
+func (x *RouteStop) GetStopType() StopType {
 	if x != nil {
 		return x.StopType
 	}
-	return ""
+	return StopType_STOP_TYPE_UNSPECIFIED
 }
 
 func (x *RouteStop) GetAddressId() string {
@@ -1689,11 +1905,11 @@ func (x *RouteStop) GetActualDeparture() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *RouteStop) GetStatus() string {
+func (x *RouteStop) GetStatus() StopStatus {
 	if x != nil {
 		return x.Status
 	}
-	return ""
+	return StopStatus_STOP_STATUS_UNSPECIFIED
 }
 
 func (x *RouteStop) GetDwellTimeMinutes() int32 {
@@ -1701,6 +1917,13 @@ func (x *RouteStop) GetDwellTimeMinutes() int32 {
 		return x.DwellTimeMinutes
 	}
 	return 0
+}
+
+func (x *RouteStop) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
 }
 
 func (x *RouteStop) GetCreatedAt() *timestamppb.Timestamp {
@@ -1721,6 +1944,7 @@ type RouteWithStops struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Route         *Route                 `protobuf:"bytes,1,opt,name=route,proto3" json:"route,omitempty"`
 	Stops         []*RouteStop           `protobuf:"bytes,2,rep,name=stops,proto3" json:"stops,omitempty"`
+	Driver        *DriverInfo            `protobuf:"bytes,3,opt,name=driver,proto3" json:"driver,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1769,6 +1993,133 @@ func (x *RouteWithStops) GetStops() []*RouteStop {
 	return nil
 }
 
+func (x *RouteWithStops) GetDriver() *DriverInfo {
+	if x != nil {
+		return x.Driver
+	}
+	return nil
+}
+
+type RouteWithDetails struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Route         *Route                  `protobuf:"bytes,1,opt,name=route,proto3" json:"route,omitempty"`
+	Stops         []*RouteStopWithDetails `protobuf:"bytes,2,rep,name=stops,proto3" json:"stops,omitempty"`
+	Driver        *DriverInfo             `protobuf:"bytes,3,opt,name=driver,proto3" json:"driver,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RouteWithDetails) Reset() {
+	*x = RouteWithDetails{}
+	mi := &file_order_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RouteWithDetails) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RouteWithDetails) ProtoMessage() {}
+
+func (x *RouteWithDetails) ProtoReflect() protoreflect.Message {
+	mi := &file_order_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RouteWithDetails.ProtoReflect.Descriptor instead.
+func (*RouteWithDetails) Descriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *RouteWithDetails) GetRoute() *Route {
+	if x != nil {
+		return x.Route
+	}
+	return nil
+}
+
+func (x *RouteWithDetails) GetStops() []*RouteStopWithDetails {
+	if x != nil {
+		return x.Stops
+	}
+	return nil
+}
+
+func (x *RouteWithDetails) GetDriver() *DriverInfo {
+	if x != nil {
+		return x.Driver
+	}
+	return nil
+}
+
+type RouteStopWithDetails struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Stop          *RouteStop             `protobuf:"bytes,1,opt,name=stop,proto3" json:"stop,omitempty"`
+	Address       *Address               `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+	Package       *Package               `protobuf:"bytes,3,opt,name=package,proto3" json:"package,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RouteStopWithDetails) Reset() {
+	*x = RouteStopWithDetails{}
+	mi := &file_order_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RouteStopWithDetails) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RouteStopWithDetails) ProtoMessage() {}
+
+func (x *RouteStopWithDetails) ProtoReflect() protoreflect.Message {
+	mi := &file_order_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RouteStopWithDetails.ProtoReflect.Descriptor instead.
+func (*RouteStopWithDetails) Descriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *RouteStopWithDetails) GetStop() *RouteStop {
+	if x != nil {
+		return x.Stop
+	}
+	return nil
+}
+
+func (x *RouteStopWithDetails) GetAddress() *Address {
+	if x != nil {
+		return x.Address
+	}
+	return nil
+}
+
+func (x *RouteStopWithDetails) GetPackage() *Package {
+	if x != nil {
+		return x.Package
+	}
+	return nil
+}
+
 type PaginationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
@@ -1779,7 +2130,7 @@ type PaginationRequest struct {
 
 func (x *PaginationRequest) Reset() {
 	*x = PaginationRequest{}
-	mi := &file_order_proto_msgTypes[13]
+	mi := &file_order_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1791,7 +2142,7 @@ func (x *PaginationRequest) String() string {
 func (*PaginationRequest) ProtoMessage() {}
 
 func (x *PaginationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_order_proto_msgTypes[13]
+	mi := &file_order_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1804,7 +2155,7 @@ func (x *PaginationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PaginationRequest.ProtoReflect.Descriptor instead.
 func (*PaginationRequest) Descriptor() ([]byte, []int) {
-	return file_order_proto_rawDescGZIP(), []int{13}
+	return file_order_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *PaginationRequest) GetPage() int32 {
@@ -1833,7 +2184,7 @@ type PaginationResponse struct {
 
 func (x *PaginationResponse) Reset() {
 	*x = PaginationResponse{}
-	mi := &file_order_proto_msgTypes[14]
+	mi := &file_order_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1845,7 +2196,7 @@ func (x *PaginationResponse) String() string {
 func (*PaginationResponse) ProtoMessage() {}
 
 func (x *PaginationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_order_proto_msgTypes[14]
+	mi := &file_order_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1858,7 +2209,7 @@ func (x *PaginationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PaginationResponse.ProtoReflect.Descriptor instead.
 func (*PaginationResponse) Descriptor() ([]byte, []int) {
-	return file_order_proto_rawDescGZIP(), []int{14}
+	return file_order_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *PaginationResponse) GetPage() int32 {
@@ -1900,7 +2251,7 @@ type Location struct {
 
 func (x *Location) Reset() {
 	*x = Location{}
-	mi := &file_order_proto_msgTypes[15]
+	mi := &file_order_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1912,7 +2263,7 @@ func (x *Location) String() string {
 func (*Location) ProtoMessage() {}
 
 func (x *Location) ProtoReflect() protoreflect.Message {
-	mi := &file_order_proto_msgTypes[15]
+	mi := &file_order_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1925,7 +2276,7 @@ func (x *Location) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Location.ProtoReflect.Descriptor instead.
 func (*Location) Descriptor() ([]byte, []int) {
-	return file_order_proto_rawDescGZIP(), []int{15}
+	return file_order_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *Location) GetLatitude() float64 {
@@ -1949,6 +2300,106 @@ func (x *Location) GetAddress() string {
 	return ""
 }
 
+type LocationUpdate struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DriverId      string                 `protobuf:"bytes,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
+	Latitude      float64                `protobuf:"fixed64,2,opt,name=latitude,proto3" json:"latitude,omitempty"`
+	Longitude     float64                `protobuf:"fixed64,3,opt,name=longitude,proto3" json:"longitude,omitempty"`
+	Heading       float64                `protobuf:"fixed64,4,opt,name=heading,proto3" json:"heading,omitempty"`
+	Speed         float64                `protobuf:"fixed64,5,opt,name=speed,proto3" json:"speed,omitempty"`
+	Accuracy      float64                `protobuf:"fixed64,6,opt,name=accuracy,proto3" json:"accuracy,omitempty"`
+	BatteryLevel  int32                  `protobuf:"varint,7,opt,name=battery_level,json=batteryLevel,proto3" json:"battery_level,omitempty"`
+	RecordedAt    *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=recorded_at,json=recordedAt,proto3" json:"recorded_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LocationUpdate) Reset() {
+	*x = LocationUpdate{}
+	mi := &file_order_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LocationUpdate) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LocationUpdate) ProtoMessage() {}
+
+func (x *LocationUpdate) ProtoReflect() protoreflect.Message {
+	mi := &file_order_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LocationUpdate.ProtoReflect.Descriptor instead.
+func (*LocationUpdate) Descriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *LocationUpdate) GetDriverId() string {
+	if x != nil {
+		return x.DriverId
+	}
+	return ""
+}
+
+func (x *LocationUpdate) GetLatitude() float64 {
+	if x != nil {
+		return x.Latitude
+	}
+	return 0
+}
+
+func (x *LocationUpdate) GetLongitude() float64 {
+	if x != nil {
+		return x.Longitude
+	}
+	return 0
+}
+
+func (x *LocationUpdate) GetHeading() float64 {
+	if x != nil {
+		return x.Heading
+	}
+	return 0
+}
+
+func (x *LocationUpdate) GetSpeed() float64 {
+	if x != nil {
+		return x.Speed
+	}
+	return 0
+}
+
+func (x *LocationUpdate) GetAccuracy() float64 {
+	if x != nil {
+		return x.Accuracy
+	}
+	return 0
+}
+
+func (x *LocationUpdate) GetBatteryLevel() int32 {
+	if x != nil {
+		return x.BatteryLevel
+	}
+	return 0
+}
+
+func (x *LocationUpdate) GetRecordedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.RecordedAt
+	}
+	return nil
+}
+
 type PriceEstimate struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
 	BasePrice           float64                `protobuf:"fixed64,1,opt,name=base_price,json=basePrice,proto3" json:"base_price,omitempty"`
@@ -1958,13 +2409,14 @@ type PriceEstimate struct {
 	TotalPrice          float64                `protobuf:"fixed64,5,opt,name=total_price,json=totalPrice,proto3" json:"total_price,omitempty"`
 	Currency            string                 `protobuf:"bytes,6,opt,name=currency,proto3" json:"currency,omitempty"`
 	EstimatedDistanceKm float64                `protobuf:"fixed64,7,opt,name=estimated_distance_km,json=estimatedDistanceKm,proto3" json:"estimated_distance_km,omitempty"`
+	Zone                string                 `protobuf:"bytes,8,opt,name=zone,proto3" json:"zone,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
 
 func (x *PriceEstimate) Reset() {
 	*x = PriceEstimate{}
-	mi := &file_order_proto_msgTypes[16]
+	mi := &file_order_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1976,7 +2428,7 @@ func (x *PriceEstimate) String() string {
 func (*PriceEstimate) ProtoMessage() {}
 
 func (x *PriceEstimate) ProtoReflect() protoreflect.Message {
-	mi := &file_order_proto_msgTypes[16]
+	mi := &file_order_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1989,7 +2441,7 @@ func (x *PriceEstimate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceEstimate.ProtoReflect.Descriptor instead.
 func (*PriceEstimate) Descriptor() ([]byte, []int) {
-	return file_order_proto_rawDescGZIP(), []int{16}
+	return file_order_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *PriceEstimate) GetBasePrice() float64 {
@@ -2041,11 +2493,270 @@ func (x *PriceEstimate) GetEstimatedDistanceKm() float64 {
 	return 0
 }
 
+func (x *PriceEstimate) GetZone() string {
+	if x != nil {
+		return x.Zone
+	}
+	return ""
+}
+
+type PriceCalculationRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	PickupAddressId   string                 `protobuf:"bytes,1,opt,name=pickup_address_id,json=pickupAddressId,proto3" json:"pickup_address_id,omitempty"`
+	DeliveryAddressId string                 `protobuf:"bytes,2,opt,name=delivery_address_id,json=deliveryAddressId,proto3" json:"delivery_address_id,omitempty"`
+	Weight            float64                `protobuf:"fixed64,3,opt,name=weight,proto3" json:"weight,omitempty"`
+	Priority          PackagePriority        `protobuf:"varint,4,opt,name=priority,proto3,enum=order.PackagePriority" json:"priority,omitempty"`
+	Zone              string                 `protobuf:"bytes,5,opt,name=zone,proto3" json:"zone,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *PriceCalculationRequest) Reset() {
+	*x = PriceCalculationRequest{}
+	mi := &file_order_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PriceCalculationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PriceCalculationRequest) ProtoMessage() {}
+
+func (x *PriceCalculationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_order_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PriceCalculationRequest.ProtoReflect.Descriptor instead.
+func (*PriceCalculationRequest) Descriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *PriceCalculationRequest) GetPickupAddressId() string {
+	if x != nil {
+		return x.PickupAddressId
+	}
+	return ""
+}
+
+func (x *PriceCalculationRequest) GetDeliveryAddressId() string {
+	if x != nil {
+		return x.DeliveryAddressId
+	}
+	return ""
+}
+
+func (x *PriceCalculationRequest) GetWeight() float64 {
+	if x != nil {
+		return x.Weight
+	}
+	return 0
+}
+
+func (x *PriceCalculationRequest) GetPriority() PackagePriority {
+	if x != nil {
+		return x.Priority
+	}
+	return PackagePriority_PACKAGE_PRIORITY_UNSPECIFIED
+}
+
+func (x *PriceCalculationRequest) GetZone() string {
+	if x != nil {
+		return x.Zone
+	}
+	return ""
+}
+
+type PackageStatistics struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	TotalPackages     int32                  `protobuf:"varint,1,opt,name=total_packages,json=totalPackages,proto3" json:"total_packages,omitempty"`
+	PendingPackages   int32                  `protobuf:"varint,2,opt,name=pending_packages,json=pendingPackages,proto3" json:"pending_packages,omitempty"`
+	InTransitPackages int32                  `protobuf:"varint,3,opt,name=in_transit_packages,json=inTransitPackages,proto3" json:"in_transit_packages,omitempty"`
+	DeliveredPackages int32                  `protobuf:"varint,4,opt,name=delivered_packages,json=deliveredPackages,proto3" json:"delivered_packages,omitempty"`
+	FailedPackages    int32                  `protobuf:"varint,5,opt,name=failed_packages,json=failedPackages,proto3" json:"failed_packages,omitempty"`
+	CancelledPackages int32                  `protobuf:"varint,6,opt,name=cancelled_packages,json=cancelledPackages,proto3" json:"cancelled_packages,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *PackageStatistics) Reset() {
+	*x = PackageStatistics{}
+	mi := &file_order_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PackageStatistics) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PackageStatistics) ProtoMessage() {}
+
+func (x *PackageStatistics) ProtoReflect() protoreflect.Message {
+	mi := &file_order_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PackageStatistics.ProtoReflect.Descriptor instead.
+func (*PackageStatistics) Descriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *PackageStatistics) GetTotalPackages() int32 {
+	if x != nil {
+		return x.TotalPackages
+	}
+	return 0
+}
+
+func (x *PackageStatistics) GetPendingPackages() int32 {
+	if x != nil {
+		return x.PendingPackages
+	}
+	return 0
+}
+
+func (x *PackageStatistics) GetInTransitPackages() int32 {
+	if x != nil {
+		return x.InTransitPackages
+	}
+	return 0
+}
+
+func (x *PackageStatistics) GetDeliveredPackages() int32 {
+	if x != nil {
+		return x.DeliveredPackages
+	}
+	return 0
+}
+
+func (x *PackageStatistics) GetFailedPackages() int32 {
+	if x != nil {
+		return x.FailedPackages
+	}
+	return 0
+}
+
+func (x *PackageStatistics) GetCancelledPackages() int32 {
+	if x != nil {
+		return x.CancelledPackages
+	}
+	return 0
+}
+
+type DeliveryStatistics struct {
+	state                      protoimpl.MessageState `protogen:"open.v1"`
+	TotalDeliveries            int32                  `protobuf:"varint,1,opt,name=total_deliveries,json=totalDeliveries,proto3" json:"total_deliveries,omitempty"`
+	ActiveDeliveries           int32                  `protobuf:"varint,2,opt,name=active_deliveries,json=activeDeliveries,proto3" json:"active_deliveries,omitempty"`
+	CompletedDeliveries        int32                  `protobuf:"varint,3,opt,name=completed_deliveries,json=completedDeliveries,proto3" json:"completed_deliveries,omitempty"`
+	FailedDeliveries           int32                  `protobuf:"varint,4,opt,name=failed_deliveries,json=failedDeliveries,proto3" json:"failed_deliveries,omitempty"`
+	AverageDeliveryTimeMinutes float64                `protobuf:"fixed64,5,opt,name=average_delivery_time_minutes,json=averageDeliveryTimeMinutes,proto3" json:"average_delivery_time_minutes,omitempty"`
+	TotalDistanceKm            float64                `protobuf:"fixed64,6,opt,name=total_distance_km,json=totalDistanceKm,proto3" json:"total_distance_km,omitempty"`
+	DelayedDeliveries          int32                  `protobuf:"varint,7,opt,name=delayed_deliveries,json=delayedDeliveries,proto3" json:"delayed_deliveries,omitempty"`
+	unknownFields              protoimpl.UnknownFields
+	sizeCache                  protoimpl.SizeCache
+}
+
+func (x *DeliveryStatistics) Reset() {
+	*x = DeliveryStatistics{}
+	mi := &file_order_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeliveryStatistics) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeliveryStatistics) ProtoMessage() {}
+
+func (x *DeliveryStatistics) ProtoReflect() protoreflect.Message {
+	mi := &file_order_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeliveryStatistics.ProtoReflect.Descriptor instead.
+func (*DeliveryStatistics) Descriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *DeliveryStatistics) GetTotalDeliveries() int32 {
+	if x != nil {
+		return x.TotalDeliveries
+	}
+	return 0
+}
+
+func (x *DeliveryStatistics) GetActiveDeliveries() int32 {
+	if x != nil {
+		return x.ActiveDeliveries
+	}
+	return 0
+}
+
+func (x *DeliveryStatistics) GetCompletedDeliveries() int32 {
+	if x != nil {
+		return x.CompletedDeliveries
+	}
+	return 0
+}
+
+func (x *DeliveryStatistics) GetFailedDeliveries() int32 {
+	if x != nil {
+		return x.FailedDeliveries
+	}
+	return 0
+}
+
+func (x *DeliveryStatistics) GetAverageDeliveryTimeMinutes() float64 {
+	if x != nil {
+		return x.AverageDeliveryTimeMinutes
+	}
+	return 0
+}
+
+func (x *DeliveryStatistics) GetTotalDistanceKm() float64 {
+	if x != nil {
+		return x.TotalDistanceKm
+	}
+	return 0
+}
+
+func (x *DeliveryStatistics) GetDelayedDeliveries() int32 {
+	if x != nil {
+		return x.DelayedDeliveries
+	}
+	return 0
+}
+
 var File_order_proto protoreflect.FileDescriptor
 
 const file_order_proto_rawDesc = "" +
 	"\n" +
-	"\vorder.proto\x12\x05order\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe6\x03\n" +
+	"\vorder.proto\x12\x05order\x1a\x1fgoogle/protobuf/timestamp.proto\"\x83\x04\n" +
 	"\aAddress\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -2063,11 +2774,12 @@ const file_order_proto_rawDesc = "" +
 	"\tlongitude\x18\v \x01(\x01R\tlongitude\x12\"\n" +
 	"\finstructions\x18\f \x01(\tR\finstructions\x12\x1d\n" +
 	"\n" +
-	"is_default\x18\r \x01(\bR\tisDefault\x129\n" +
+	"is_default\x18\r \x01(\bR\tisDefault\x12\x1b\n" +
+	"\tis_active\x18\x0e \x01(\bR\bisActive\x129\n" +
 	"\n" +
-	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x85\x05\n" +
+	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xb6\x05\n" +
 	"\aPackage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -2079,29 +2791,32 @@ const file_order_proto_rawDesc = "" +
 	"\x06weight\x18\x06 \x01(\x01R\x06weight\x12\x1e\n" +
 	"\n" +
 	"dimensions\x18\a \x01(\tR\n" +
-	"dimensions\x122\n" +
-	"\bcategory\x18\b \x01(\x0e2\x16.order.PackageCategoryR\bcategory\x12\x14\n" +
+	"dimensions\x12\x1a\n" +
+	"\bcategory\x18\b \x01(\tR\bcategory\x12\x14\n" +
 	"\x05value\x18\t \x01(\x01R\x05value\x122\n" +
 	"\bpriority\x18\n" +
 	" \x01(\x0e2\x16.order.PackagePriorityR\bpriority\x12)\n" +
-	"\x10special_handling\x18\v \x01(\tR\x0fspecialHandling\x12*\n" +
-	"\x11pickup_address_id\x18\f \x01(\tR\x0fpickupAddressId\x12.\n" +
-	"\x13delivery_address_id\x18\r \x01(\tR\x11deliveryAddressId\x12,\n" +
-	"\x06status\x18\x0e \x01(\x0e2\x14.order.PackageStatusR\x06status\x129\n" +
+	"\x10special_handling\x18\v \x01(\tR\x0fspecialHandling\x12\x18\n" +
+	"\afragile\x18\f \x01(\bR\afragile\x12-\n" +
+	"\x12requires_signature\x18\r \x01(\bR\x11requiresSignature\x12*\n" +
+	"\x11pickup_address_id\x18\x0e \x01(\tR\x0fpickupAddressId\x12.\n" +
+	"\x13delivery_address_id\x18\x0f \x01(\tR\x11deliveryAddressId\x12,\n" +
+	"\x06status\x18\x10 \x01(\x0e2\x14.order.PackageStatusR\x06status\x129\n" +
 	"\n" +
-	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xb2\x01\n" +
+	"updated_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xb2\x01\n" +
 	"\x14PackageWithAddresses\x12(\n" +
 	"\apackage\x18\x01 \x01(\v2\x0e.order.PackageR\apackage\x125\n" +
 	"\x0epickup_address\x18\x02 \x01(\v2\x0e.order.AddressR\rpickupAddress\x129\n" +
-	"\x10delivery_address\x18\x03 \x01(\v2\x0e.order.AddressR\x0fdeliveryAddress\"\x92\x02\n" +
+	"\x10delivery_address\x18\x03 \x01(\v2\x0e.order.AddressR\x0fdeliveryAddress\"\xd1\x02\n" +
 	"\x12PackageFullDetails\x12(\n" +
 	"\apackage\x18\x01 \x01(\v2\x0e.order.PackageR\apackage\x125\n" +
 	"\x0epickup_address\x18\x02 \x01(\v2\x0e.order.AddressR\rpickupAddress\x129\n" +
 	"\x10delivery_address\x18\x03 \x01(\v2\x0e.order.AddressR\x0fdeliveryAddress\x12/\n" +
 	"\bcustomer\x18\x04 \x01(\v2\x13.order.CustomerInfoR\bcustomer\x12/\n" +
-	"\bdelivery\x18\x05 \x01(\v2\x13.order.DeliveryInfoR\bdelivery\"\xba\x01\n" +
+	"\bdelivery\x18\x05 \x01(\v2\x13.order.DeliveryInfoR\bdelivery\x12=\n" +
+	"\x0ftracking_events\x18\x06 \x03(\v2\x14.order.TrackingEventR\x0etrackingEvents\"\xdf\x01\n" +
 	"\fCustomerInfo\x12\x1f\n" +
 	"\vcustomer_id\x18\x01 \x01(\tR\n" +
 	"customerId\x12!\n" +
@@ -2110,7 +2825,8 @@ const file_order_proto_rawDesc = "" +
 	"first_name\x18\x03 \x01(\tR\tfirstName\x12\x1b\n" +
 	"\tlast_name\x18\x04 \x01(\tR\blastName\x12\x14\n" +
 	"\x05email\x18\x05 \x01(\tR\x05email\x12\x14\n" +
-	"\x05phone\x18\x06 \x01(\tR\x05phone\"\x99\a\n" +
+	"\x05phone\x18\x06 \x01(\tR\x05phone\x12#\n" +
+	"\rbusiness_type\x18\a \x01(\tR\fbusinessType\"\x92\b\n" +
 	"\bDelivery\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1f\n" +
 	"\vdelivery_id\x18\x02 \x01(\tR\n" +
@@ -2125,20 +2841,24 @@ const file_order_proto_rawDesc = "" +
 	"\x17estimated_delivery_time\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\x15estimatedDeliveryTime\x12L\n" +
 	"\x14actual_delivery_time\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\x12actualDeliveryTime\x12>\n" +
-	"\x0fdelivery_status\x18\v \x01(\x0e2\x15.order.DeliveryStatusR\x0edeliveryStatus\x12%\n" +
-	"\x0edelivery_proof\x18\f \x01(\tR\rdeliveryProof\x12%\n" +
-	"\x0edelivery_notes\x18\r \x01(\tR\rdeliveryNotes\x12%\n" +
-	"\x0efailure_reason\x18\x0e \x01(\tR\rfailureReason\x12\x1f\n" +
-	"\vdistance_km\x18\x0f \x01(\x01R\n" +
+	"\x0fdelivery_status\x18\v \x01(\x0e2\x15.order.DeliveryStatusR\x0edeliveryStatus\x12)\n" +
+	"\x10pickup_signature\x18\f \x01(\tR\x0fpickupSignature\x12-\n" +
+	"\x12delivery_signature\x18\r \x01(\tR\x11deliverySignature\x12%\n" +
+	"\x0edelivery_proof\x18\x0e \x01(\tR\rdeliveryProof\x12%\n" +
+	"\x0edelivery_notes\x18\x0f \x01(\tR\rdeliveryNotes\x12%\n" +
+	"\x0efailure_reason\x18\x10 \x01(\tR\rfailureReason\x12\x1f\n" +
+	"\vdistance_km\x18\x11 \x01(\x01R\n" +
 	"distanceKm\x12)\n" +
-	"\x10duration_minutes\x18\x10 \x01(\x05R\x0fdurationMinutes\x129\n" +
+	"\x10duration_minutes\x18\x12 \x01(\x05R\x0fdurationMinutes\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"is_delayed\x18\x13 \x01(\bR\tisDelayed\x129\n" +
 	"\n" +
-	"updated_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"f\n" +
+	"created_at\x18\x14 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"updated_at\x18\x15 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"f\n" +
 	"\fDeliveryInfo\x12+\n" +
 	"\bdelivery\x18\x01 \x01(\v2\x0f.order.DeliveryR\bdelivery\x12)\n" +
-	"\x06driver\x18\x02 \x01(\v2\x11.order.DriverInfoR\x06driver\"\xdb\x01\n" +
+	"\x06driver\x18\x02 \x01(\v2\x11.order.DriverInfoR\x06driver\"\x98\x02\n" +
 	"\n" +
 	"DriverInfo\x12\x1b\n" +
 	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x1d\n" +
@@ -2147,15 +2867,18 @@ const file_order_proto_rawDesc = "" +
 	"\tlast_name\x18\x03 \x01(\tR\blastName\x12\x14\n" +
 	"\x05phone\x18\x04 \x01(\tR\x05phone\x12!\n" +
 	"\fvehicle_type\x18\x05 \x01(\tR\vvehicleType\x12#\n" +
-	"\rvehicle_plate\x18\x06 \x01(\tR\fvehiclePlate\x12\x16\n" +
-	"\x06rating\x18\a \x01(\x01R\x06rating\"\xba\x02\n" +
+	"\rvehicle_plate\x18\x06 \x01(\tR\fvehiclePlate\x12#\n" +
+	"\rvehicle_model\x18\a \x01(\tR\fvehicleModel\x12\x16\n" +
+	"\x06rating\x18\b \x01(\x01R\x06rating\x12\x16\n" +
+	"\x06status\x18\t \x01(\tR\x06status\"\xf9\x02\n" +
 	"\x13DeliveryFullDetails\x12+\n" +
 	"\bdelivery\x18\x01 \x01(\v2\x0f.order.DeliveryR\bdelivery\x12(\n" +
 	"\apackage\x18\x02 \x01(\v2\x0e.order.PackageR\apackage\x125\n" +
 	"\x0epickup_address\x18\x03 \x01(\v2\x0e.order.AddressR\rpickupAddress\x129\n" +
 	"\x10delivery_address\x18\x04 \x01(\v2\x0e.order.AddressR\x0fdeliveryAddress\x12)\n" +
 	"\x06driver\x18\x05 \x01(\v2\x11.order.DriverInfoR\x06driver\x12/\n" +
-	"\bcustomer\x18\x06 \x01(\v2\x13.order.CustomerInfoR\bcustomer\"\xcd\x03\n" +
+	"\bcustomer\x18\x06 \x01(\v2\x13.order.CustomerInfoR\bcustomer\x12=\n" +
+	"\x0ftracking_events\x18\a \x03(\v2\x14.order.TrackingEventR\x0etrackingEvents\"\xe9\x03\n" +
 	"\rTrackingEvent\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bevent_id\x18\x02 \x01(\tR\aeventId\x12\x1d\n" +
@@ -2173,9 +2896,10 @@ const file_order_proto_rawDesc = "" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"occurredAt\x12\x1d\n" +
 	"\n" +
-	"created_by\x18\v \x01(\tR\tcreatedBy\x129\n" +
+	"created_by\x18\v \x01(\tR\tcreatedBy\x12\x1a\n" +
+	"\bmetadata\x18\f \x01(\tR\bmetadata\x129\n" +
 	"\n" +
-	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x91\x05\n" +
+	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xef\x05\n" +
 	"\x05Route\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\broute_id\x18\x02 \x01(\tR\arouteId\x12\x1b\n" +
@@ -2183,44 +2907,57 @@ const file_order_proto_rawDesc = "" +
 	"\n" +
 	"route_name\x18\x04 \x01(\tR\trouteName\x12%\n" +
 	"\x0estart_location\x18\x05 \x01(\tR\rstartLocation\x12!\n" +
-	"\fend_location\x18\x06 \x01(\tR\vendLocation\x12\x16\n" +
-	"\x06status\x18\a \x01(\tR\x06status\x12*\n" +
+	"\fend_location\x18\x06 \x01(\tR\vendLocation\x12*\n" +
+	"\x06status\x18\a \x01(\x0e2\x12.order.RouteStatusR\x06status\x12*\n" +
 	"\x11total_distance_km\x18\b \x01(\x01R\x0ftotalDistanceKm\x12<\n" +
 	"\x1aestimated_duration_minutes\x18\t \x01(\x05R\x18estimatedDurationMinutes\x126\n" +
 	"\x17actual_duration_minutes\x18\n" +
 	" \x01(\x05R\x15actualDurationMinutes\x12-\n" +
-	"\x12optimization_score\x18\v \x01(\x01R\x11optimizationScore\x129\n" +
+	"\x12optimization_score\x18\v \x01(\x01R\x11optimizationScore\x12\x1f\n" +
+	"\vtotal_stops\x18\f \x01(\x05R\n" +
+	"totalStops\x12'\n" +
+	"\x0fcompleted_stops\x18\r \x01(\x05R\x0ecompletedStops\x129\n" +
 	"\n" +
-	"started_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12=\n" +
-	"\fcompleted_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\x129\n" +
+	"started_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12=\n" +
+	"\fcompleted_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\x129\n" +
 	"\n" +
-	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xad\x05\n" +
+	"updated_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xe7\x05\n" +
 	"\tRouteStop\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\astop_id\x18\x02 \x01(\tR\x06stopId\x12\x19\n" +
 	"\broute_id\x18\x03 \x01(\tR\arouteId\x12\x1f\n" +
 	"\vdelivery_id\x18\x04 \x01(\tR\n" +
 	"deliveryId\x12#\n" +
-	"\rstop_sequence\x18\x05 \x01(\x05R\fstopSequence\x12\x1b\n" +
-	"\tstop_type\x18\x06 \x01(\tR\bstopType\x12\x1d\n" +
+	"\rstop_sequence\x18\x05 \x01(\x05R\fstopSequence\x12,\n" +
+	"\tstop_type\x18\x06 \x01(\x0e2\x0f.order.StopTypeR\bstopType\x12\x1d\n" +
 	"\n" +
 	"address_id\x18\a \x01(\tR\taddressId\x12G\n" +
 	"\x11scheduled_arrival\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\x10scheduledArrival\x12A\n" +
 	"\x0eactual_arrival\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\ractualArrival\x12K\n" +
 	"\x13scheduled_departure\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\x12scheduledDeparture\x12E\n" +
-	"\x10actual_departure\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\x0factualDeparture\x12\x16\n" +
-	"\x06status\x18\f \x01(\tR\x06status\x12,\n" +
-	"\x12dwell_time_minutes\x18\r \x01(\x05R\x10dwellTimeMinutes\x129\n" +
+	"\x10actual_departure\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\x0factualDeparture\x12)\n" +
+	"\x06status\x18\f \x01(\x0e2\x11.order.StopStatusR\x06status\x12,\n" +
+	"\x12dwell_time_minutes\x18\r \x01(\x05R\x10dwellTimeMinutes\x12\x14\n" +
+	"\x05notes\x18\x0e \x01(\tR\x05notes\x129\n" +
 	"\n" +
-	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\\\n" +
+	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x87\x01\n" +
 	"\x0eRouteWithStops\x12\"\n" +
 	"\x05route\x18\x01 \x01(\v2\f.order.RouteR\x05route\x12&\n" +
-	"\x05stops\x18\x02 \x03(\v2\x10.order.RouteStopR\x05stops\"D\n" +
+	"\x05stops\x18\x02 \x03(\v2\x10.order.RouteStopR\x05stops\x12)\n" +
+	"\x06driver\x18\x03 \x01(\v2\x11.order.DriverInfoR\x06driver\"\x94\x01\n" +
+	"\x10RouteWithDetails\x12\"\n" +
+	"\x05route\x18\x01 \x01(\v2\f.order.RouteR\x05route\x121\n" +
+	"\x05stops\x18\x02 \x03(\v2\x1b.order.RouteStopWithDetailsR\x05stops\x12)\n" +
+	"\x06driver\x18\x03 \x01(\v2\x11.order.DriverInfoR\x06driver\"\x90\x01\n" +
+	"\x14RouteStopWithDetails\x12$\n" +
+	"\x04stop\x18\x01 \x01(\v2\x10.order.RouteStopR\x04stop\x12(\n" +
+	"\aaddress\x18\x02 \x01(\v2\x0e.order.AddressR\aaddress\x12(\n" +
+	"\apackage\x18\x03 \x01(\v2\x0e.order.PackageR\apackage\"D\n" +
 	"\x11PaginationRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"\x87\x01\n" +
@@ -2234,7 +2971,17 @@ const file_order_proto_rawDesc = "" +
 	"\bLocation\x12\x1a\n" +
 	"\blatitude\x18\x01 \x01(\x01R\blatitude\x12\x1c\n" +
 	"\tlongitude\x18\x02 \x01(\x01R\tlongitude\x12\x18\n" +
-	"\aaddress\x18\x03 \x01(\tR\aaddress\"\x9a\x02\n" +
+	"\aaddress\x18\x03 \x01(\tR\aaddress\"\x95\x02\n" +
+	"\x0eLocationUpdate\x12\x1b\n" +
+	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x1a\n" +
+	"\blatitude\x18\x02 \x01(\x01R\blatitude\x12\x1c\n" +
+	"\tlongitude\x18\x03 \x01(\x01R\tlongitude\x12\x18\n" +
+	"\aheading\x18\x04 \x01(\x01R\aheading\x12\x14\n" +
+	"\x05speed\x18\x05 \x01(\x01R\x05speed\x12\x1a\n" +
+	"\baccuracy\x18\x06 \x01(\x01R\baccuracy\x12#\n" +
+	"\rbattery_level\x18\a \x01(\x05R\fbatteryLevel\x12;\n" +
+	"\vrecorded_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"recordedAt\"\xae\x02\n" +
 	"\rPriceEstimate\x12\x1d\n" +
 	"\n" +
 	"base_price\x18\x01 \x01(\x01R\tbasePrice\x12%\n" +
@@ -2244,36 +2991,51 @@ const file_order_proto_rawDesc = "" +
 	"\vtotal_price\x18\x05 \x01(\x01R\n" +
 	"totalPrice\x12\x1a\n" +
 	"\bcurrency\x18\x06 \x01(\tR\bcurrency\x122\n" +
-	"\x15estimated_distance_km\x18\a \x01(\x01R\x13estimatedDistanceKm*\x84\x02\n" +
+	"\x15estimated_distance_km\x18\a \x01(\x01R\x13estimatedDistanceKm\x12\x12\n" +
+	"\x04zone\x18\b \x01(\tR\x04zone\"\xd5\x01\n" +
+	"\x17PriceCalculationRequest\x12*\n" +
+	"\x11pickup_address_id\x18\x01 \x01(\tR\x0fpickupAddressId\x12.\n" +
+	"\x13delivery_address_id\x18\x02 \x01(\tR\x11deliveryAddressId\x12\x16\n" +
+	"\x06weight\x18\x03 \x01(\x01R\x06weight\x122\n" +
+	"\bpriority\x18\x04 \x01(\x0e2\x16.order.PackagePriorityR\bpriority\x12\x12\n" +
+	"\x04zone\x18\x05 \x01(\tR\x04zone\"\x9c\x02\n" +
+	"\x11PackageStatistics\x12%\n" +
+	"\x0etotal_packages\x18\x01 \x01(\x05R\rtotalPackages\x12)\n" +
+	"\x10pending_packages\x18\x02 \x01(\x05R\x0fpendingPackages\x12.\n" +
+	"\x13in_transit_packages\x18\x03 \x01(\x05R\x11inTransitPackages\x12-\n" +
+	"\x12delivered_packages\x18\x04 \x01(\x05R\x11deliveredPackages\x12'\n" +
+	"\x0ffailed_packages\x18\x05 \x01(\x05R\x0efailedPackages\x12-\n" +
+	"\x12cancelled_packages\x18\x06 \x01(\x05R\x11cancelledPackages\"\xea\x02\n" +
+	"\x12DeliveryStatistics\x12)\n" +
+	"\x10total_deliveries\x18\x01 \x01(\x05R\x0ftotalDeliveries\x12+\n" +
+	"\x11active_deliveries\x18\x02 \x01(\x05R\x10activeDeliveries\x121\n" +
+	"\x14completed_deliveries\x18\x03 \x01(\x05R\x13completedDeliveries\x12+\n" +
+	"\x11failed_deliveries\x18\x04 \x01(\x05R\x10failedDeliveries\x12A\n" +
+	"\x1daverage_delivery_time_minutes\x18\x05 \x01(\x01R\x1aaverageDeliveryTimeMinutes\x12*\n" +
+	"\x11total_distance_km\x18\x06 \x01(\x01R\x0ftotalDistanceKm\x12-\n" +
+	"\x12delayed_deliveries\x18\a \x01(\x05R\x11delayedDeliveries*\xa1\x02\n" +
 	"\rPackageStatus\x12\x1e\n" +
 	"\x1aPACKAGE_STATUS_UNSPECIFIED\x10\x00\x12\x1a\n" +
-	"\x16PACKAGE_STATUS_PENDING\x10\x01\x12\x1c\n" +
-	"\x18PACKAGE_STATUS_PICKED_UP\x10\x02\x12\x1d\n" +
-	"\x19PACKAGE_STATUS_IN_TRANSIT\x10\x03\x12#\n" +
-	"\x1fPACKAGE_STATUS_OUT_FOR_DELIVERY\x10\x04\x12\x1c\n" +
-	"\x18PACKAGE_STATUS_DELIVERED\x10\x05\x12\x19\n" +
-	"\x15PACKAGE_STATUS_FAILED\x10\x06\x12\x1c\n" +
-	"\x18PACKAGE_STATUS_CANCELLED\x10\a*\x8e\x01\n" +
+	"\x16PACKAGE_STATUS_PENDING\x10\x01\x12\x1b\n" +
+	"\x17PACKAGE_STATUS_ASSIGNED\x10\x02\x12\x1c\n" +
+	"\x18PACKAGE_STATUS_PICKED_UP\x10\x03\x12\x1d\n" +
+	"\x19PACKAGE_STATUS_IN_TRANSIT\x10\x04\x12#\n" +
+	"\x1fPACKAGE_STATUS_OUT_FOR_DELIVERY\x10\x05\x12\x1c\n" +
+	"\x18PACKAGE_STATUS_DELIVERED\x10\x06\x12\x19\n" +
+	"\x15PACKAGE_STATUS_FAILED\x10\a\x12\x1c\n" +
+	"\x18PACKAGE_STATUS_CANCELLED\x10\b*\x8e\x01\n" +
 	"\x0fPackagePriority\x12 \n" +
 	"\x1cPACKAGE_PRIORITY_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18PACKAGE_PRIORITY_ECONOMY\x10\x01\x12\x1d\n" +
 	"\x19PACKAGE_PRIORITY_STANDARD\x10\x02\x12\x1c\n" +
-	"\x18PACKAGE_PRIORITY_EXPRESS\x10\x03*\xeb\x01\n" +
-	"\x0fPackageCategory\x12 \n" +
-	"\x1cPACKAGE_CATEGORY_UNSPECIFIED\x10\x00\x12\x1e\n" +
-	"\x1aPACKAGE_CATEGORY_DOCUMENTS\x10\x01\x12 \n" +
-	"\x1cPACKAGE_CATEGORY_ELECTRONICS\x10\x02\x12\x19\n" +
-	"\x15PACKAGE_CATEGORY_FOOD\x10\x03\x12\x1c\n" +
-	"\x18PACKAGE_CATEGORY_FRAGILE\x10\x04\x12\x1d\n" +
-	"\x19PACKAGE_CATEGORY_CLOTHING\x10\x05\x12\x1c\n" +
-	"\x18PACKAGE_CATEGORY_GENERAL\x10\x06*\xca\x01\n" +
+	"\x18PACKAGE_PRIORITY_EXPRESS\x10\x03*\xca\x01\n" +
 	"\x0eDeliveryStatus\x12\x1f\n" +
 	"\x1bDELIVERY_STATUS_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18DELIVERY_STATUS_ASSIGNED\x10\x01\x12\x1f\n" +
 	"\x1bDELIVERY_STATUS_IN_PROGRESS\x10\x02\x12\x1d\n" +
 	"\x19DELIVERY_STATUS_COMPLETED\x10\x03\x12\x1a\n" +
 	"\x16DELIVERY_STATUS_FAILED\x10\x04\x12\x1d\n" +
-	"\x19DELIVERY_STATUS_CANCELLED\x10\x05*\xd5\x02\n" +
+	"\x19DELIVERY_STATUS_CANCELLED\x10\x05*\xf5\x02\n" +
 	"\x11TrackingEventType\x12#\n" +
 	"\x1fTRACKING_EVENT_TYPE_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bTRACKING_EVENT_TYPE_CREATED\x10\x01\x12 \n" +
@@ -2282,8 +3044,26 @@ const file_order_proto_rawDesc = "" +
 	"\x1eTRACKING_EVENT_TYPE_IN_TRANSIT\x10\x04\x12(\n" +
 	"$TRACKING_EVENT_TYPE_OUT_FOR_DELIVERY\x10\x05\x12!\n" +
 	"\x1dTRACKING_EVENT_TYPE_DELIVERED\x10\x06\x12!\n" +
-	"\x1dTRACKING_EVENT_TYPE_EXCEPTION\x10\a\x12!\n" +
-	"\x1dTRACKING_EVENT_TYPE_CANCELLED\x10\bB\x1aZ\x18github.com/iambasill/streamfleet/pb/orderb\x06proto3"
+	"\x1dTRACKING_EVENT_TYPE_EXCEPTION\x10\a\x12\x1e\n" +
+	"\x1aTRACKING_EVENT_TYPE_FAILED\x10\b\x12!\n" +
+	"\x1dTRACKING_EVENT_TYPE_CANCELLED\x10\t*\x9b\x01\n" +
+	"\vRouteStatus\x12\x1c\n" +
+	"\x18ROUTE_STATUS_UNSPECIFIED\x10\x00\x12\x18\n" +
+	"\x14ROUTE_STATUS_PLANNED\x10\x01\x12\x1c\n" +
+	"\x18ROUTE_STATUS_IN_PROGRESS\x10\x02\x12\x1a\n" +
+	"\x16ROUTE_STATUS_COMPLETED\x10\x03\x12\x1a\n" +
+	"\x16ROUTE_STATUS_CANCELLED\x10\x04*S\n" +
+	"\bStopType\x12\x19\n" +
+	"\x15STOP_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
+	"\x10STOP_TYPE_PICKUP\x10\x01\x12\x16\n" +
+	"\x12STOP_TYPE_DELIVERY\x10\x02*\x8f\x01\n" +
+	"\n" +
+	"StopStatus\x12\x1b\n" +
+	"\x17STOP_STATUS_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13STOP_STATUS_PENDING\x10\x01\x12\x17\n" +
+	"\x13STOP_STATUS_ARRIVED\x10\x02\x12\x19\n" +
+	"\x15STOP_STATUS_COMPLETED\x10\x03\x12\x17\n" +
+	"\x13STOP_STATUS_SKIPPED\x10\x04B+Z)github.com/iambasill/streamfleet/pb/orderb\x06proto3"
 
 var (
 	file_order_proto_rawDescOnce sync.Once
@@ -2297,85 +3077,106 @@ func file_order_proto_rawDescGZIP() []byte {
 	return file_order_proto_rawDescData
 }
 
-var file_order_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_order_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_order_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
+var file_order_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_order_proto_goTypes = []any{
-	(PackageStatus)(0),            // 0: order.PackageStatus
-	(PackagePriority)(0),          // 1: order.PackagePriority
-	(PackageCategory)(0),          // 2: order.PackageCategory
-	(DeliveryStatus)(0),           // 3: order.DeliveryStatus
-	(TrackingEventType)(0),        // 4: order.TrackingEventType
-	(*Address)(nil),               // 5: order.Address
-	(*Package)(nil),               // 6: order.Package
-	(*PackageWithAddresses)(nil),  // 7: order.PackageWithAddresses
-	(*PackageFullDetails)(nil),    // 8: order.PackageFullDetails
-	(*CustomerInfo)(nil),          // 9: order.CustomerInfo
-	(*Delivery)(nil),              // 10: order.Delivery
-	(*DeliveryInfo)(nil),          // 11: order.DeliveryInfo
-	(*DriverInfo)(nil),            // 12: order.DriverInfo
-	(*DeliveryFullDetails)(nil),   // 13: order.DeliveryFullDetails
-	(*TrackingEvent)(nil),         // 14: order.TrackingEvent
-	(*Route)(nil),                 // 15: order.Route
-	(*RouteStop)(nil),             // 16: order.RouteStop
-	(*RouteWithStops)(nil),        // 17: order.RouteWithStops
-	(*PaginationRequest)(nil),     // 18: order.PaginationRequest
-	(*PaginationResponse)(nil),    // 19: order.PaginationResponse
-	(*Location)(nil),              // 20: order.Location
-	(*PriceEstimate)(nil),         // 21: order.PriceEstimate
-	(*timestamppb.Timestamp)(nil), // 22: google.protobuf.Timestamp
+	(PackageStatus)(0),              // 0: order.PackageStatus
+	(PackagePriority)(0),            // 1: order.PackagePriority
+	(DeliveryStatus)(0),             // 2: order.DeliveryStatus
+	(TrackingEventType)(0),          // 3: order.TrackingEventType
+	(RouteStatus)(0),                // 4: order.RouteStatus
+	(StopType)(0),                   // 5: order.StopType
+	(StopStatus)(0),                 // 6: order.StopStatus
+	(*Address)(nil),                 // 7: order.Address
+	(*Package)(nil),                 // 8: order.Package
+	(*PackageWithAddresses)(nil),    // 9: order.PackageWithAddresses
+	(*PackageFullDetails)(nil),      // 10: order.PackageFullDetails
+	(*CustomerInfo)(nil),            // 11: order.CustomerInfo
+	(*Delivery)(nil),                // 12: order.Delivery
+	(*DeliveryInfo)(nil),            // 13: order.DeliveryInfo
+	(*DriverInfo)(nil),              // 14: order.DriverInfo
+	(*DeliveryFullDetails)(nil),     // 15: order.DeliveryFullDetails
+	(*TrackingEvent)(nil),           // 16: order.TrackingEvent
+	(*Route)(nil),                   // 17: order.Route
+	(*RouteStop)(nil),               // 18: order.RouteStop
+	(*RouteWithStops)(nil),          // 19: order.RouteWithStops
+	(*RouteWithDetails)(nil),        // 20: order.RouteWithDetails
+	(*RouteStopWithDetails)(nil),    // 21: order.RouteStopWithDetails
+	(*PaginationRequest)(nil),       // 22: order.PaginationRequest
+	(*PaginationResponse)(nil),      // 23: order.PaginationResponse
+	(*Location)(nil),                // 24: order.Location
+	(*LocationUpdate)(nil),          // 25: order.LocationUpdate
+	(*PriceEstimate)(nil),           // 26: order.PriceEstimate
+	(*PriceCalculationRequest)(nil), // 27: order.PriceCalculationRequest
+	(*PackageStatistics)(nil),       // 28: order.PackageStatistics
+	(*DeliveryStatistics)(nil),      // 29: order.DeliveryStatistics
+	(*timestamppb.Timestamp)(nil),   // 30: google.protobuf.Timestamp
 }
 var file_order_proto_depIdxs = []int32{
-	22, // 0: order.Address.created_at:type_name -> google.protobuf.Timestamp
-	22, // 1: order.Address.updated_at:type_name -> google.protobuf.Timestamp
-	2,  // 2: order.Package.category:type_name -> order.PackageCategory
-	1,  // 3: order.Package.priority:type_name -> order.PackagePriority
-	0,  // 4: order.Package.status:type_name -> order.PackageStatus
-	22, // 5: order.Package.created_at:type_name -> google.protobuf.Timestamp
-	22, // 6: order.Package.updated_at:type_name -> google.protobuf.Timestamp
-	6,  // 7: order.PackageWithAddresses.package:type_name -> order.Package
-	5,  // 8: order.PackageWithAddresses.pickup_address:type_name -> order.Address
-	5,  // 9: order.PackageWithAddresses.delivery_address:type_name -> order.Address
-	6,  // 10: order.PackageFullDetails.package:type_name -> order.Package
-	5,  // 11: order.PackageFullDetails.pickup_address:type_name -> order.Address
-	5,  // 12: order.PackageFullDetails.delivery_address:type_name -> order.Address
-	9,  // 13: order.PackageFullDetails.customer:type_name -> order.CustomerInfo
-	11, // 14: order.PackageFullDetails.delivery:type_name -> order.DeliveryInfo
-	22, // 15: order.Delivery.scheduled_pickup_time:type_name -> google.protobuf.Timestamp
-	22, // 16: order.Delivery.actual_pickup_time:type_name -> google.protobuf.Timestamp
-	22, // 17: order.Delivery.scheduled_delivery_time:type_name -> google.protobuf.Timestamp
-	22, // 18: order.Delivery.estimated_delivery_time:type_name -> google.protobuf.Timestamp
-	22, // 19: order.Delivery.actual_delivery_time:type_name -> google.protobuf.Timestamp
-	3,  // 20: order.Delivery.delivery_status:type_name -> order.DeliveryStatus
-	22, // 21: order.Delivery.created_at:type_name -> google.protobuf.Timestamp
-	22, // 22: order.Delivery.updated_at:type_name -> google.protobuf.Timestamp
-	10, // 23: order.DeliveryInfo.delivery:type_name -> order.Delivery
-	12, // 24: order.DeliveryInfo.driver:type_name -> order.DriverInfo
-	10, // 25: order.DeliveryFullDetails.delivery:type_name -> order.Delivery
-	6,  // 26: order.DeliveryFullDetails.package:type_name -> order.Package
-	5,  // 27: order.DeliveryFullDetails.pickup_address:type_name -> order.Address
-	5,  // 28: order.DeliveryFullDetails.delivery_address:type_name -> order.Address
-	12, // 29: order.DeliveryFullDetails.driver:type_name -> order.DriverInfo
-	9,  // 30: order.DeliveryFullDetails.customer:type_name -> order.CustomerInfo
-	4,  // 31: order.TrackingEvent.event_type:type_name -> order.TrackingEventType
-	22, // 32: order.TrackingEvent.occurred_at:type_name -> google.protobuf.Timestamp
-	22, // 33: order.TrackingEvent.created_at:type_name -> google.protobuf.Timestamp
-	22, // 34: order.Route.started_at:type_name -> google.protobuf.Timestamp
-	22, // 35: order.Route.completed_at:type_name -> google.protobuf.Timestamp
-	22, // 36: order.Route.created_at:type_name -> google.protobuf.Timestamp
-	22, // 37: order.Route.updated_at:type_name -> google.protobuf.Timestamp
-	22, // 38: order.RouteStop.scheduled_arrival:type_name -> google.protobuf.Timestamp
-	22, // 39: order.RouteStop.actual_arrival:type_name -> google.protobuf.Timestamp
-	22, // 40: order.RouteStop.scheduled_departure:type_name -> google.protobuf.Timestamp
-	22, // 41: order.RouteStop.actual_departure:type_name -> google.protobuf.Timestamp
-	22, // 42: order.RouteStop.created_at:type_name -> google.protobuf.Timestamp
-	22, // 43: order.RouteStop.updated_at:type_name -> google.protobuf.Timestamp
-	15, // 44: order.RouteWithStops.route:type_name -> order.Route
-	16, // 45: order.RouteWithStops.stops:type_name -> order.RouteStop
-	46, // [46:46] is the sub-list for method output_type
-	46, // [46:46] is the sub-list for method input_type
-	46, // [46:46] is the sub-list for extension type_name
-	46, // [46:46] is the sub-list for extension extendee
-	0,  // [0:46] is the sub-list for field type_name
+	30, // 0: order.Address.created_at:type_name -> google.protobuf.Timestamp
+	30, // 1: order.Address.updated_at:type_name -> google.protobuf.Timestamp
+	1,  // 2: order.Package.priority:type_name -> order.PackagePriority
+	0,  // 3: order.Package.status:type_name -> order.PackageStatus
+	30, // 4: order.Package.created_at:type_name -> google.protobuf.Timestamp
+	30, // 5: order.Package.updated_at:type_name -> google.protobuf.Timestamp
+	8,  // 6: order.PackageWithAddresses.package:type_name -> order.Package
+	7,  // 7: order.PackageWithAddresses.pickup_address:type_name -> order.Address
+	7,  // 8: order.PackageWithAddresses.delivery_address:type_name -> order.Address
+	8,  // 9: order.PackageFullDetails.package:type_name -> order.Package
+	7,  // 10: order.PackageFullDetails.pickup_address:type_name -> order.Address
+	7,  // 11: order.PackageFullDetails.delivery_address:type_name -> order.Address
+	11, // 12: order.PackageFullDetails.customer:type_name -> order.CustomerInfo
+	13, // 13: order.PackageFullDetails.delivery:type_name -> order.DeliveryInfo
+	16, // 14: order.PackageFullDetails.tracking_events:type_name -> order.TrackingEvent
+	30, // 15: order.Delivery.scheduled_pickup_time:type_name -> google.protobuf.Timestamp
+	30, // 16: order.Delivery.actual_pickup_time:type_name -> google.protobuf.Timestamp
+	30, // 17: order.Delivery.scheduled_delivery_time:type_name -> google.protobuf.Timestamp
+	30, // 18: order.Delivery.estimated_delivery_time:type_name -> google.protobuf.Timestamp
+	30, // 19: order.Delivery.actual_delivery_time:type_name -> google.protobuf.Timestamp
+	2,  // 20: order.Delivery.delivery_status:type_name -> order.DeliveryStatus
+	30, // 21: order.Delivery.created_at:type_name -> google.protobuf.Timestamp
+	30, // 22: order.Delivery.updated_at:type_name -> google.protobuf.Timestamp
+	12, // 23: order.DeliveryInfo.delivery:type_name -> order.Delivery
+	14, // 24: order.DeliveryInfo.driver:type_name -> order.DriverInfo
+	12, // 25: order.DeliveryFullDetails.delivery:type_name -> order.Delivery
+	8,  // 26: order.DeliveryFullDetails.package:type_name -> order.Package
+	7,  // 27: order.DeliveryFullDetails.pickup_address:type_name -> order.Address
+	7,  // 28: order.DeliveryFullDetails.delivery_address:type_name -> order.Address
+	14, // 29: order.DeliveryFullDetails.driver:type_name -> order.DriverInfo
+	11, // 30: order.DeliveryFullDetails.customer:type_name -> order.CustomerInfo
+	16, // 31: order.DeliveryFullDetails.tracking_events:type_name -> order.TrackingEvent
+	3,  // 32: order.TrackingEvent.event_type:type_name -> order.TrackingEventType
+	30, // 33: order.TrackingEvent.occurred_at:type_name -> google.protobuf.Timestamp
+	30, // 34: order.TrackingEvent.created_at:type_name -> google.protobuf.Timestamp
+	4,  // 35: order.Route.status:type_name -> order.RouteStatus
+	30, // 36: order.Route.started_at:type_name -> google.protobuf.Timestamp
+	30, // 37: order.Route.completed_at:type_name -> google.protobuf.Timestamp
+	30, // 38: order.Route.created_at:type_name -> google.protobuf.Timestamp
+	30, // 39: order.Route.updated_at:type_name -> google.protobuf.Timestamp
+	5,  // 40: order.RouteStop.stop_type:type_name -> order.StopType
+	30, // 41: order.RouteStop.scheduled_arrival:type_name -> google.protobuf.Timestamp
+	30, // 42: order.RouteStop.actual_arrival:type_name -> google.protobuf.Timestamp
+	30, // 43: order.RouteStop.scheduled_departure:type_name -> google.protobuf.Timestamp
+	30, // 44: order.RouteStop.actual_departure:type_name -> google.protobuf.Timestamp
+	6,  // 45: order.RouteStop.status:type_name -> order.StopStatus
+	30, // 46: order.RouteStop.created_at:type_name -> google.protobuf.Timestamp
+	30, // 47: order.RouteStop.updated_at:type_name -> google.protobuf.Timestamp
+	17, // 48: order.RouteWithStops.route:type_name -> order.Route
+	18, // 49: order.RouteWithStops.stops:type_name -> order.RouteStop
+	14, // 50: order.RouteWithStops.driver:type_name -> order.DriverInfo
+	17, // 51: order.RouteWithDetails.route:type_name -> order.Route
+	21, // 52: order.RouteWithDetails.stops:type_name -> order.RouteStopWithDetails
+	14, // 53: order.RouteWithDetails.driver:type_name -> order.DriverInfo
+	18, // 54: order.RouteStopWithDetails.stop:type_name -> order.RouteStop
+	7,  // 55: order.RouteStopWithDetails.address:type_name -> order.Address
+	8,  // 56: order.RouteStopWithDetails.package:type_name -> order.Package
+	30, // 57: order.LocationUpdate.recorded_at:type_name -> google.protobuf.Timestamp
+	1,  // 58: order.PriceCalculationRequest.priority:type_name -> order.PackagePriority
+	59, // [59:59] is the sub-list for method output_type
+	59, // [59:59] is the sub-list for method input_type
+	59, // [59:59] is the sub-list for extension type_name
+	59, // [59:59] is the sub-list for extension extendee
+	0,  // [0:59] is the sub-list for field type_name
 }
 
 func init() { file_order_proto_init() }
@@ -2388,8 +3189,8 @@ func file_order_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_order_proto_rawDesc), len(file_order_proto_rawDesc)),
-			NumEnums:      5,
-			NumMessages:   17,
+			NumEnums:      7,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

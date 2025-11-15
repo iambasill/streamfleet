@@ -55,13 +55,13 @@ db-drop:
 	psql "$(DB_URL_NO_DB)" -c "DROP DATABASE IF EXISTS $(DB_DATABASE);"
 
 proto:
-	rm -rf src/pb/*.go 
+	rm -rf src/grpc/services/*.go 
 	rm -rf src/docs/swagger/*.swagger.json
-	protoc --proto_path=src/proto \
-	--go_out=src/pb --go-grpc_out=src/pb \
+	protoc --proto_path=pkg/proto \
+	--go_out=src/grpc/services --go-grpc_out=src/grpc/services \
 	--go_opt=paths=source_relative --go-grpc_opt=paths=source_relative \
-	--grpc-gateway_out=src/pb --grpc-gateway_opt=paths=source_relative \
-	src/proto/*.proto
+	--grpc-gateway_out=src/grpc/services --grpc-gateway_opt=paths=source_relative \
+	pkg/proto/*.proto
 
 server:
 	go run cmd/main.go

@@ -6,19 +6,20 @@ option go_package = "github.com/iambasill/streamfleet/pb/order";
 
 import "google/protobuf/timestamp.proto";
 
-// // ============================================
-// // ENUMS
-// // ============================================
+// ============================================
+// ENUMS
+// ============================================
 
 enum PackageStatus {
   PACKAGE_STATUS_UNSPECIFIED = 0;
   PACKAGE_STATUS_PENDING = 1;
-  PACKAGE_STATUS_PICKED_UP = 2;
-  PACKAGE_STATUS_IN_TRANSIT = 3;
-  PACKAGE_STATUS_OUT_FOR_DELIVERY = 4;
-  PACKAGE_STATUS_DELIVERED = 5;
-  PACKAGE_STATUS_FAILED = 6;
-  PACKAGE_STATUS_CANCELLED = 7;
+  PACKAGE_STATUS_ASSIGNED = 2;
+  PACKAGE_STATUS_PICKED_UP = 3;
+  PACKAGE_STATUS_IN_TRANSIT = 4;
+  PACKAGE_STATUS_OUT_FOR_DELIVERY = 5;
+  PACKAGE_STATUS_DELIVERED = 6;
+  PACKAGE_STATUS_FAILED = 7;
+  PACKAGE_STATUS_CANCELLED = 8;
 }
 
 enum PackagePriority {
@@ -26,16 +27,6 @@ enum PackagePriority {
   PACKAGE_PRIORITY_ECONOMY = 1;
   PACKAGE_PRIORITY_STANDARD = 2;
   PACKAGE_PRIORITY_EXPRESS = 3;
-}
-
-enum PackageCategory {
-  PACKAGE_CATEGORY_UNSPECIFIED = 0;
-  PACKAGE_CATEGORY_DOCUMENTS = 1;
-  PACKAGE_CATEGORY_ELECTRONICS = 2;
-  PACKAGE_CATEGORY_FOOD = 3;
-  PACKAGE_CATEGORY_FRAGILE = 4;
-  PACKAGE_CATEGORY_CLOTHING = 5;
-  PACKAGE_CATEGORY_GENERAL = 6;
 }
 
 enum DeliveryStatus {
@@ -56,7 +47,30 @@ enum TrackingEventType {
   TRACKING_EVENT_TYPE_OUT_FOR_DELIVERY = 5;
   TRACKING_EVENT_TYPE_DELIVERED = 6;
   TRACKING_EVENT_TYPE_EXCEPTION = 7;
-  TRACKING_EVENT_TYPE_CANCELLED = 8;
+  TRACKING_EVENT_TYPE_FAILED = 8;
+  TRACKING_EVENT_TYPE_CANCELLED = 9;
+}
+
+enum RouteStatus {
+  ROUTE_STATUS_UNSPECIFIED = 0;
+  ROUTE_STATUS_PLANNED = 1;
+  ROUTE_STATUS_IN_PROGRESS = 2;
+  ROUTE_STATUS_COMPLETED = 3;
+  ROUTE_STATUS_CANCELLED = 4;
+}
+
+enum StopType {
+  STOP_TYPE_UNSPECIFIED = 0;
+  STOP_TYPE_PICKUP = 1;
+  STOP_TYPE_DELIVERY = 2;
+}
+
+enum StopStatus {
+  STOP_STATUS_UNSPECIFIED = 0;
+  STOP_STATUS_PENDING = 1;
+  STOP_STATUS_ARRIVED = 2;
+  STOP_STATUS_COMPLETED = 3;
+  STOP_STATUS_SKIPPED = 4;
 }
 
 // ============================================
@@ -77,8 +91,9 @@ message Address {
   double longitude = 11;
   string instructions = 12;
   bool is_default = 13;
-  google.protobuf.Timestamp created_at = 14;
-  google.protobuf.Timestamp updated_at = 15;
+  bool is_active = 14;
+  google.protobuf.Timestamp created_at = 15;
+  google.protobuf.Timestamp updated_at = 16;
 }
 
 // ============================================
@@ -93,15 +108,17 @@ message Package {
   string description = 5;
   double weight = 6;
   string dimensions = 7;
-  PackageCategory category = 8;
+  string category = 8;
   double value = 9;
   PackagePriority priority = 10;
   string special_handling = 11;
-  string pickup_address_id = 12;
-  string delivery_address_id = 13;
-  PackageStatus status = 14;
-  google.protobuf.Timestamp created_at = 15;
-  google.protobuf.Timestamp updated_at = 16;
+  bool fragile = 12;
+  bool requires_signature = 13;
+  string pickup_address_id = 14;
+  string delivery_address_id = 15;
+  PackageStatus status = 16;
+  google.protobuf.Timestamp created_at = 17;
+  google.protobuf.Timestamp updated_at = 18;
 }
 
 message PackageWithAddresses {
@@ -116,6 +133,7 @@ message PackageFullDetails {
   Address delivery_address = 3;
   CustomerInfo customer = 4;
   DeliveryInfo delivery = 5;
+  repeated TrackingEvent tracking_events = 6;
 }
 
 message CustomerInfo {
@@ -125,6 +143,7 @@ message CustomerInfo {
   string last_name = 4;
   string email = 5;
   string phone = 6;
+  string business_type = 7;
 }
 
 // ============================================
@@ -143,13 +162,16 @@ message Delivery {
   google.protobuf.Timestamp estimated_delivery_time = 9;
   google.protobuf.Timestamp actual_delivery_time = 10;
   DeliveryStatus delivery_status = 11;
-  string delivery_proof = 12;
-  string delivery_notes = 13;
-  string failure_reason = 14;
-  double distance_km = 15;
-  int32 duration_minutes = 16;
-  google.protobuf.Timestamp created_at = 17;
-  google.protobuf.Timestamp updated_at = 18;
+  string pickup_signature = 12;
+  string delivery_signature = 13;
+  string delivery_proof = 14;
+  string delivery_notes = 15;
+  string failure_reason = 16;
+  double distance_km = 17;
+  int32 duration_minutes = 18;
+  bool is_delayed = 19;
+  google.protobuf.Timestamp created_at = 20;
+  google.protobuf.Timestamp updated_at = 21;
 }
 
 message DeliveryInfo {
@@ -164,7 +186,9 @@ message DriverInfo {
   string phone = 4;
   string vehicle_type = 5;
   string vehicle_plate = 6;
-  double rating = 7;
+  string vehicle_model = 7;
+  double rating = 8;
+  string status = 9;
 }
 
 message DeliveryFullDetails {
@@ -174,6 +198,7 @@ message DeliveryFullDetails {
   Address delivery_address = 4;
   DriverInfo driver = 5;
   CustomerInfo customer = 6;
+  repeated TrackingEvent tracking_events = 7;
 }
 
 // ============================================
@@ -192,7 +217,8 @@ message TrackingEvent {
   double longitude = 9;
   google.protobuf.Timestamp occurred_at = 10;
   string created_by = 11;
-  google.protobuf.Timestamp created_at = 12;
+  string metadata = 12;
+  google.protobuf.Timestamp created_at = 13;
 }
 
 // ============================================
@@ -206,15 +232,17 @@ message Route {
   string route_name = 4;
   string start_location = 5;
   string end_location = 6;
-  string status = 7;
+  RouteStatus status = 7;
   double total_distance_km = 8;
   int32 estimated_duration_minutes = 9;
   int32 actual_duration_minutes = 10;
   double optimization_score = 11;
-  google.protobuf.Timestamp started_at = 12;
-  google.protobuf.Timestamp completed_at = 13;
-  google.protobuf.Timestamp created_at = 14;
-  google.protobuf.Timestamp updated_at = 15;
+  int32 total_stops = 12;
+  int32 completed_stops = 13;
+  google.protobuf.Timestamp started_at = 14;
+  google.protobuf.Timestamp completed_at = 15;
+  google.protobuf.Timestamp created_at = 16;
+  google.protobuf.Timestamp updated_at = 17;
 }
 
 message RouteStop {
@@ -223,21 +251,35 @@ message RouteStop {
   string route_id = 3;
   string delivery_id = 4;
   int32 stop_sequence = 5;
-  string stop_type = 6;
+  StopType stop_type = 6;
   string address_id = 7;
   google.protobuf.Timestamp scheduled_arrival = 8;
   google.protobuf.Timestamp actual_arrival = 9;
   google.protobuf.Timestamp scheduled_departure = 10;
   google.protobuf.Timestamp actual_departure = 11;
-  string status = 12;
+  StopStatus status = 12;
   int32 dwell_time_minutes = 13;
-  google.protobuf.Timestamp created_at = 14;
-  google.protobuf.Timestamp updated_at = 15;
+  string notes = 14;
+  google.protobuf.Timestamp created_at = 15;
+  google.protobuf.Timestamp updated_at = 16;
 }
 
 message RouteWithStops {
   Route route = 1;
   repeated RouteStop stops = 2;
+  DriverInfo driver = 3;
+}
+
+message RouteWithDetails {
+  Route route = 1;
+  repeated RouteStopWithDetails stops = 2;
+  DriverInfo driver = 3;
+}
+
+message RouteStopWithDetails {
+  RouteStop stop = 1;
+  Address address = 2;
+  Package package = 3;
 }
 
 // ============================================
@@ -266,6 +308,17 @@ message Location {
   string address = 3;
 }
 
+message LocationUpdate {
+  string driver_id = 1;
+  double latitude = 2;
+  double longitude = 3;
+  double heading = 4;
+  double speed = 5;
+  double accuracy = 6;
+  int32 battery_level = 7;
+  google.protobuf.Timestamp recorded_at = 8;
+}
+
 // ============================================
 // PRICING
 // ============================================
@@ -278,4 +331,36 @@ message PriceEstimate {
   double total_price = 5;
   string currency = 6;
   double estimated_distance_km = 7;
+  string zone = 8;
+}
+
+message PriceCalculationRequest {
+  string pickup_address_id = 1;
+  string delivery_address_id = 2;
+  double weight = 3;
+  PackagePriority priority = 4;
+  string zone = 5;
+}
+
+// ============================================
+// STATISTICS
+// ============================================
+
+message PackageStatistics {
+  int32 total_packages = 1;
+  int32 pending_packages = 2;
+  int32 in_transit_packages = 3;
+  int32 delivered_packages = 4;
+  int32 failed_packages = 5;
+  int32 cancelled_packages = 6;
+}
+
+message DeliveryStatistics {
+  int32 total_deliveries = 1;
+  int32 active_deliveries = 2;
+  int32 completed_deliveries = 3;
+  int32 failed_deliveries = 4;
+  double average_delivery_time_minutes = 5;
+  double total_distance_km = 6;
+  int32 delayed_deliveries = 7;
 }

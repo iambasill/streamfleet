@@ -21,24 +21,28 @@ INSERT INTO drivers (
     license_expiry,
     vehicle_type,
     vehicle_plate,
+    vehicle_model,
+    vehicle_year,
     vehicle_capacity,
     status,
     background_check_status
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 )
-RETURNING id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_capacity, status, rating, total_deliveries, background_check_status, background_check_date, created_at, updated_at, driver_id
+RETURNING id, driver_id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_model, vehicle_year, vehicle_capacity, status, rating, total_deliveries, completed_deliveries, background_check_status, background_check_date, profile_verified, documents_verified, current_latitude, current_longitude, current_location, last_location_update, created_at, updated_at
 `
 
 type CreateDriverParams struct {
-	UserID                string    `json:"user_id"`
-	LicenseNumber         string    `json:"license_number"`
-	LicenseExpiry         time.Time `json:"license_expiry"`
-	VehicleType           string    `json:"vehicle_type"`
-	VehiclePlate          string    `json:"vehicle_plate"`
-	VehicleCapacity       string    `json:"vehicle_capacity"`
-	Status                string    `json:"status"`
-	BackgroundCheckStatus string    `json:"background_check_status"`
+	UserID                string                `json:"user_id"`
+	LicenseNumber         string                `json:"license_number"`
+	LicenseExpiry         time.Time             `json:"license_expiry"`
+	VehicleType           DriverVehicleType     `json:"vehicle_type"`
+	VehiclePlate          string                `json:"vehicle_plate"`
+	VehicleModel          sql.NullString        `json:"vehicle_model"`
+	VehicleYear           sql.NullInt32         `json:"vehicle_year"`
+	VehicleCapacity       string                `json:"vehicle_capacity"`
+	Status                DriverStatus          `json:"status"`
+	BackgroundCheckStatus BackgroundCheckStatus `json:"background_check_status"`
 }
 
 // ============================================
@@ -51,6 +55,8 @@ func (q *Queries) CreateDriver(ctx context.Context, arg CreateDriverParams) (Dri
 		arg.LicenseExpiry,
 		arg.VehicleType,
 		arg.VehiclePlate,
+		arg.VehicleModel,
+		arg.VehicleYear,
 		arg.VehicleCapacity,
 		arg.Status,
 		arg.BackgroundCheckStatus,
@@ -58,26 +64,113 @@ func (q *Queries) CreateDriver(ctx context.Context, arg CreateDriverParams) (Dri
 	var i Driver
 	err := row.Scan(
 		&i.ID,
+		&i.DriverID,
 		&i.UserID,
 		&i.LicenseNumber,
 		&i.LicenseExpiry,
 		&i.VehicleType,
 		&i.VehiclePlate,
+		&i.VehicleModel,
+		&i.VehicleYear,
 		&i.VehicleCapacity,
 		&i.Status,
 		&i.Rating,
 		&i.TotalDeliveries,
+		&i.CompletedDeliveries,
 		&i.BackgroundCheckStatus,
 		&i.BackgroundCheckDate,
+		&i.ProfileVerified,
+		&i.DocumentsVerified,
+		&i.CurrentLatitude,
+		&i.CurrentLongitude,
+		&i.CurrentLocation,
+		&i.LastLocationUpdate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DriverID,
 	)
 	return i, err
 }
 
+const findNearbyDrivers = `-- name: FindNearbyDrivers :many
+SELECT 
+    driver_id,
+    user_id,
+    vehicle_type,
+    rating,
+    current_latitude,
+    current_longitude,
+    ST_Distance(
+        current_location,
+        ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography
+    ) / 1000 AS distance_km
+FROM drivers
+WHERE status = 'online'
+AND background_check_status = 'approved'
+AND current_location IS NOT NULL
+AND ST_DWithin(
+    current_location,
+    ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography,
+    $3 * 1000
+)
+ORDER BY distance_km ASC
+LIMIT $4
+`
+
+type FindNearbyDriversParams struct {
+	StMakepoint   interface{} `json:"st_makepoint"`
+	StMakepoint_2 interface{} `json:"st_makepoint_2"`
+	Column3       interface{} `json:"column_3"`
+	Limit         int32       `json:"limit"`
+}
+
+type FindNearbyDriversRow struct {
+	DriverID         string            `json:"driver_id"`
+	UserID           string            `json:"user_id"`
+	VehicleType      DriverVehicleType `json:"vehicle_type"`
+	Rating           sql.NullString    `json:"rating"`
+	CurrentLatitude  sql.NullString    `json:"current_latitude"`
+	CurrentLongitude sql.NullString    `json:"current_longitude"`
+	DistanceKm       int32             `json:"distance_km"`
+}
+
+func (q *Queries) FindNearbyDrivers(ctx context.Context, arg FindNearbyDriversParams) ([]FindNearbyDriversRow, error) {
+	rows, err := q.db.QueryContext(ctx, findNearbyDrivers,
+		arg.StMakepoint,
+		arg.StMakepoint_2,
+		arg.Column3,
+		arg.Limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FindNearbyDriversRow{}
+	for rows.Next() {
+		var i FindNearbyDriversRow
+		if err := rows.Scan(
+			&i.DriverID,
+			&i.UserID,
+			&i.VehicleType,
+			&i.Rating,
+			&i.CurrentLatitude,
+			&i.CurrentLongitude,
+			&i.DistanceKm,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getDriver = `-- name: GetDriver :one
-SELECT id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_capacity, status, rating, total_deliveries, background_check_status, background_check_date, created_at, updated_at, driver_id FROM drivers
+SELECT id, driver_id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_model, vehicle_year, vehicle_capacity, status, rating, total_deliveries, completed_deliveries, background_check_status, background_check_date, profile_verified, documents_verified, current_latitude, current_longitude, current_location, last_location_update, created_at, updated_at FROM drivers
 WHERE id = $1 LIMIT 1
 `
 
@@ -86,26 +179,35 @@ func (q *Queries) GetDriver(ctx context.Context, id uuid.UUID) (Driver, error) {
 	var i Driver
 	err := row.Scan(
 		&i.ID,
+		&i.DriverID,
 		&i.UserID,
 		&i.LicenseNumber,
 		&i.LicenseExpiry,
 		&i.VehicleType,
 		&i.VehiclePlate,
+		&i.VehicleModel,
+		&i.VehicleYear,
 		&i.VehicleCapacity,
 		&i.Status,
 		&i.Rating,
 		&i.TotalDeliveries,
+		&i.CompletedDeliveries,
 		&i.BackgroundCheckStatus,
 		&i.BackgroundCheckDate,
+		&i.ProfileVerified,
+		&i.DocumentsVerified,
+		&i.CurrentLatitude,
+		&i.CurrentLongitude,
+		&i.CurrentLocation,
+		&i.LastLocationUpdate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DriverID,
 	)
 	return i, err
 }
 
 const getDriverByDriverID = `-- name: GetDriverByDriverID :one
-SELECT id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_capacity, status, rating, total_deliveries, background_check_status, background_check_date, created_at, updated_at, driver_id FROM drivers
+SELECT id, driver_id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_model, vehicle_year, vehicle_capacity, status, rating, total_deliveries, completed_deliveries, background_check_status, background_check_date, profile_verified, documents_verified, current_latitude, current_longitude, current_location, last_location_update, created_at, updated_at FROM drivers
 WHERE driver_id = $1 LIMIT 1
 `
 
@@ -114,26 +216,72 @@ func (q *Queries) GetDriverByDriverID(ctx context.Context, driverID string) (Dri
 	var i Driver
 	err := row.Scan(
 		&i.ID,
+		&i.DriverID,
 		&i.UserID,
 		&i.LicenseNumber,
 		&i.LicenseExpiry,
 		&i.VehicleType,
 		&i.VehiclePlate,
+		&i.VehicleModel,
+		&i.VehicleYear,
 		&i.VehicleCapacity,
 		&i.Status,
 		&i.Rating,
 		&i.TotalDeliveries,
+		&i.CompletedDeliveries,
 		&i.BackgroundCheckStatus,
 		&i.BackgroundCheckDate,
+		&i.ProfileVerified,
+		&i.DocumentsVerified,
+		&i.CurrentLatitude,
+		&i.CurrentLongitude,
+		&i.CurrentLocation,
+		&i.LastLocationUpdate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getDriverByLicenseNumber = `-- name: GetDriverByLicenseNumber :one
+SELECT id, driver_id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_model, vehicle_year, vehicle_capacity, status, rating, total_deliveries, completed_deliveries, background_check_status, background_check_date, profile_verified, documents_verified, current_latitude, current_longitude, current_location, last_location_update, created_at, updated_at FROM drivers
+WHERE license_number = $1 LIMIT 1
+`
+
+func (q *Queries) GetDriverByLicenseNumber(ctx context.Context, licenseNumber string) (Driver, error) {
+	row := q.db.QueryRowContext(ctx, getDriverByLicenseNumber, licenseNumber)
+	var i Driver
+	err := row.Scan(
+		&i.ID,
 		&i.DriverID,
+		&i.UserID,
+		&i.LicenseNumber,
+		&i.LicenseExpiry,
+		&i.VehicleType,
+		&i.VehiclePlate,
+		&i.VehicleModel,
+		&i.VehicleYear,
+		&i.VehicleCapacity,
+		&i.Status,
+		&i.Rating,
+		&i.TotalDeliveries,
+		&i.CompletedDeliveries,
+		&i.BackgroundCheckStatus,
+		&i.BackgroundCheckDate,
+		&i.ProfileVerified,
+		&i.DocumentsVerified,
+		&i.CurrentLatitude,
+		&i.CurrentLongitude,
+		&i.CurrentLocation,
+		&i.LastLocationUpdate,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getDriverByUserID = `-- name: GetDriverByUserID :one
-SELECT id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_capacity, status, rating, total_deliveries, background_check_status, background_check_date, created_at, updated_at, driver_id FROM drivers
+SELECT id, driver_id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_model, vehicle_year, vehicle_capacity, status, rating, total_deliveries, completed_deliveries, background_check_status, background_check_date, profile_verified, documents_verified, current_latitude, current_longitude, current_location, last_location_update, created_at, updated_at FROM drivers
 WHERE user_id = $1 LIMIT 1
 `
 
@@ -142,27 +290,109 @@ func (q *Queries) GetDriverByUserID(ctx context.Context, userID string) (Driver,
 	var i Driver
 	err := row.Scan(
 		&i.ID,
+		&i.DriverID,
 		&i.UserID,
 		&i.LicenseNumber,
 		&i.LicenseExpiry,
 		&i.VehicleType,
 		&i.VehiclePlate,
+		&i.VehicleModel,
+		&i.VehicleYear,
 		&i.VehicleCapacity,
 		&i.Status,
 		&i.Rating,
 		&i.TotalDeliveries,
+		&i.CompletedDeliveries,
 		&i.BackgroundCheckStatus,
 		&i.BackgroundCheckDate,
+		&i.ProfileVerified,
+		&i.DocumentsVerified,
+		&i.CurrentLatitude,
+		&i.CurrentLongitude,
+		&i.CurrentLocation,
+		&i.LastLocationUpdate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getDriverByVehiclePlate = `-- name: GetDriverByVehiclePlate :one
+SELECT id, driver_id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_model, vehicle_year, vehicle_capacity, status, rating, total_deliveries, completed_deliveries, background_check_status, background_check_date, profile_verified, documents_verified, current_latitude, current_longitude, current_location, last_location_update, created_at, updated_at FROM drivers
+WHERE vehicle_plate = $1 LIMIT 1
+`
+
+func (q *Queries) GetDriverByVehiclePlate(ctx context.Context, vehiclePlate string) (Driver, error) {
+	row := q.db.QueryRowContext(ctx, getDriverByVehiclePlate, vehiclePlate)
+	var i Driver
+	err := row.Scan(
+		&i.ID,
 		&i.DriverID,
+		&i.UserID,
+		&i.LicenseNumber,
+		&i.LicenseExpiry,
+		&i.VehicleType,
+		&i.VehiclePlate,
+		&i.VehicleModel,
+		&i.VehicleYear,
+		&i.VehicleCapacity,
+		&i.Status,
+		&i.Rating,
+		&i.TotalDeliveries,
+		&i.CompletedDeliveries,
+		&i.BackgroundCheckStatus,
+		&i.BackgroundCheckDate,
+		&i.ProfileVerified,
+		&i.DocumentsVerified,
+		&i.CurrentLatitude,
+		&i.CurrentLongitude,
+		&i.CurrentLocation,
+		&i.LastLocationUpdate,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getDriverStats = `-- name: GetDriverStats :one
+SELECT 
+    driver_id,
+    rating,
+    total_deliveries,
+    completed_deliveries,
+    CASE 
+        WHEN total_deliveries > 0 THEN 
+            ROUND((completed_deliveries::decimal / total_deliveries * 100), 2)
+        ELSE 0 
+    END AS completion_rate
+FROM drivers
+WHERE driver_id = $1
+`
+
+type GetDriverStatsRow struct {
+	DriverID            string         `json:"driver_id"`
+	Rating              sql.NullString `json:"rating"`
+	TotalDeliveries     sql.NullInt32  `json:"total_deliveries"`
+	CompletedDeliveries sql.NullInt32  `json:"completed_deliveries"`
+	CompletionRate      int32          `json:"completion_rate"`
+}
+
+func (q *Queries) GetDriverStats(ctx context.Context, driverID string) (GetDriverStatsRow, error) {
+	row := q.db.QueryRowContext(ctx, getDriverStats, driverID)
+	var i GetDriverStatsRow
+	err := row.Scan(
+		&i.DriverID,
+		&i.Rating,
+		&i.TotalDeliveries,
+		&i.CompletedDeliveries,
+		&i.CompletionRate,
 	)
 	return i, err
 }
 
 const getDriverWithUser = `-- name: GetDriverWithUser :one
 SELECT 
-    d.id, d.user_id, d.license_number, d.license_expiry, d.vehicle_type, d.vehicle_plate, d.vehicle_capacity, d.status, d.rating, d.total_deliveries, d.background_check_status, d.background_check_date, d.created_at, d.updated_at, d.driver_id,
+    d.id, d.driver_id, d.user_id, d.license_number, d.license_expiry, d.vehicle_type, d.vehicle_plate, d.vehicle_model, d.vehicle_year, d.vehicle_capacity, d.status, d.rating, d.total_deliveries, d.completed_deliveries, d.background_check_status, d.background_check_date, d.profile_verified, d.documents_verified, d.current_latitude, d.current_longitude, d.current_location, d.last_location_update, d.created_at, d.updated_at,
     u.first_name,
     u.last_name,
     u.email,
@@ -175,26 +405,35 @@ LIMIT 1
 `
 
 type GetDriverWithUserRow struct {
-	ID                    uuid.UUID      `json:"id"`
-	UserID                string         `json:"user_id"`
-	LicenseNumber         string         `json:"license_number"`
-	LicenseExpiry         time.Time      `json:"license_expiry"`
-	VehicleType           string         `json:"vehicle_type"`
-	VehiclePlate          string         `json:"vehicle_plate"`
-	VehicleCapacity       string         `json:"vehicle_capacity"`
-	Status                string         `json:"status"`
-	Rating                sql.NullString `json:"rating"`
-	TotalDeliveries       sql.NullInt32  `json:"total_deliveries"`
-	BackgroundCheckStatus string         `json:"background_check_status"`
-	BackgroundCheckDate   sql.NullTime   `json:"background_check_date"`
-	CreatedAt             time.Time      `json:"created_at"`
-	UpdatedAt             time.Time      `json:"updated_at"`
-	DriverID              string         `json:"driver_id"`
-	FirstName             string         `json:"first_name"`
-	LastName              string         `json:"last_name"`
-	Email                 string         `json:"email"`
-	Phone                 string         `json:"phone"`
-	Avatar                sql.NullString `json:"avatar"`
+	ID                    uuid.UUID             `json:"id"`
+	DriverID              string                `json:"driver_id"`
+	UserID                string                `json:"user_id"`
+	LicenseNumber         string                `json:"license_number"`
+	LicenseExpiry         time.Time             `json:"license_expiry"`
+	VehicleType           DriverVehicleType     `json:"vehicle_type"`
+	VehiclePlate          string                `json:"vehicle_plate"`
+	VehicleModel          sql.NullString        `json:"vehicle_model"`
+	VehicleYear           sql.NullInt32         `json:"vehicle_year"`
+	VehicleCapacity       string                `json:"vehicle_capacity"`
+	Status                DriverStatus          `json:"status"`
+	Rating                sql.NullString        `json:"rating"`
+	TotalDeliveries       sql.NullInt32         `json:"total_deliveries"`
+	CompletedDeliveries   sql.NullInt32         `json:"completed_deliveries"`
+	BackgroundCheckStatus BackgroundCheckStatus `json:"background_check_status"`
+	BackgroundCheckDate   sql.NullTime          `json:"background_check_date"`
+	ProfileVerified       sql.NullBool          `json:"profile_verified"`
+	DocumentsVerified     sql.NullBool          `json:"documents_verified"`
+	CurrentLatitude       sql.NullString        `json:"current_latitude"`
+	CurrentLongitude      sql.NullString        `json:"current_longitude"`
+	CurrentLocation       interface{}           `json:"current_location"`
+	LastLocationUpdate    sql.NullTime          `json:"last_location_update"`
+	CreatedAt             time.Time             `json:"created_at"`
+	UpdatedAt             time.Time             `json:"updated_at"`
+	FirstName             string                `json:"first_name"`
+	LastName              string                `json:"last_name"`
+	Email                 string                `json:"email"`
+	Phone                 string                `json:"phone"`
+	Avatar                sql.NullString        `json:"avatar"`
 }
 
 func (q *Queries) GetDriverWithUser(ctx context.Context, driverID string) (GetDriverWithUserRow, error) {
@@ -202,20 +441,29 @@ func (q *Queries) GetDriverWithUser(ctx context.Context, driverID string) (GetDr
 	var i GetDriverWithUserRow
 	err := row.Scan(
 		&i.ID,
+		&i.DriverID,
 		&i.UserID,
 		&i.LicenseNumber,
 		&i.LicenseExpiry,
 		&i.VehicleType,
 		&i.VehiclePlate,
+		&i.VehicleModel,
+		&i.VehicleYear,
 		&i.VehicleCapacity,
 		&i.Status,
 		&i.Rating,
 		&i.TotalDeliveries,
+		&i.CompletedDeliveries,
 		&i.BackgroundCheckStatus,
 		&i.BackgroundCheckDate,
+		&i.ProfileVerified,
+		&i.DocumentsVerified,
+		&i.CurrentLatitude,
+		&i.CurrentLongitude,
+		&i.CurrentLocation,
+		&i.LastLocationUpdate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DriverID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
@@ -225,10 +473,23 @@ func (q *Queries) GetDriverWithUser(ctx context.Context, driverID string) (GetDr
 	return i, err
 }
 
+const incrementDriverDeliveries = `-- name: IncrementDriverDeliveries :exec
+UPDATE drivers
+SET total_deliveries = total_deliveries + 1
+WHERE driver_id = $1
+`
+
+func (q *Queries) IncrementDriverDeliveries(ctx context.Context, driverID string) error {
+	_, err := q.db.ExecContext(ctx, incrementDriverDeliveries, driverID)
+	return err
+}
+
 const listAvailableDrivers = `-- name: ListAvailableDrivers :many
-SELECT id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_capacity, status, rating, total_deliveries, background_check_status, background_check_date, created_at, updated_at, driver_id FROM drivers
+SELECT id, driver_id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_model, vehicle_year, vehicle_capacity, status, rating, total_deliveries, completed_deliveries, background_check_status, background_check_date, profile_verified, documents_verified, current_latitude, current_longitude, current_location, last_location_update, created_at, updated_at FROM drivers
 WHERE status = 'online'
 AND background_check_status = 'approved'
+AND profile_verified = true
+AND documents_verified = true
 ORDER BY rating DESC, total_deliveries DESC
 `
 
@@ -243,20 +504,83 @@ func (q *Queries) ListAvailableDrivers(ctx context.Context) ([]Driver, error) {
 		var i Driver
 		if err := rows.Scan(
 			&i.ID,
+			&i.DriverID,
 			&i.UserID,
 			&i.LicenseNumber,
 			&i.LicenseExpiry,
 			&i.VehicleType,
 			&i.VehiclePlate,
+			&i.VehicleModel,
+			&i.VehicleYear,
 			&i.VehicleCapacity,
 			&i.Status,
 			&i.Rating,
 			&i.TotalDeliveries,
+			&i.CompletedDeliveries,
 			&i.BackgroundCheckStatus,
 			&i.BackgroundCheckDate,
+			&i.ProfileVerified,
+			&i.DocumentsVerified,
+			&i.CurrentLatitude,
+			&i.CurrentLongitude,
+			&i.CurrentLocation,
+			&i.LastLocationUpdate,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listDriversByStatus = `-- name: ListDriversByStatus :many
+SELECT id, driver_id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_model, vehicle_year, vehicle_capacity, status, rating, total_deliveries, completed_deliveries, background_check_status, background_check_date, profile_verified, documents_verified, current_latitude, current_longitude, current_location, last_location_update, created_at, updated_at FROM drivers
+WHERE status = $1
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListDriversByStatus(ctx context.Context, status DriverStatus) ([]Driver, error) {
+	rows, err := q.db.QueryContext(ctx, listDriversByStatus, status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Driver{}
+	for rows.Next() {
+		var i Driver
+		if err := rows.Scan(
+			&i.ID,
 			&i.DriverID,
+			&i.UserID,
+			&i.LicenseNumber,
+			&i.LicenseExpiry,
+			&i.VehicleType,
+			&i.VehiclePlate,
+			&i.VehicleModel,
+			&i.VehicleYear,
+			&i.VehicleCapacity,
+			&i.Status,
+			&i.Rating,
+			&i.TotalDeliveries,
+			&i.CompletedDeliveries,
+			&i.BackgroundCheckStatus,
+			&i.BackgroundCheckDate,
+			&i.ProfileVerified,
+			&i.DocumentsVerified,
+			&i.CurrentLatitude,
+			&i.CurrentLongitude,
+			&i.CurrentLocation,
+			&i.LastLocationUpdate,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -272,13 +596,14 @@ func (q *Queries) ListAvailableDrivers(ctx context.Context) ([]Driver, error) {
 }
 
 const listDriversByVehicleType = `-- name: ListDriversByVehicleType :many
-SELECT id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_capacity, status, rating, total_deliveries, background_check_status, background_check_date, created_at, updated_at, driver_id FROM drivers
+SELECT id, driver_id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_model, vehicle_year, vehicle_capacity, status, rating, total_deliveries, completed_deliveries, background_check_status, background_check_date, profile_verified, documents_verified, current_latitude, current_longitude, current_location, last_location_update, created_at, updated_at FROM drivers
 WHERE vehicle_type = $1
 AND status = 'online'
+AND background_check_status = 'approved'
 ORDER BY rating DESC
 `
 
-func (q *Queries) ListDriversByVehicleType(ctx context.Context, vehicleType string) ([]Driver, error) {
+func (q *Queries) ListDriversByVehicleType(ctx context.Context, vehicleType DriverVehicleType) ([]Driver, error) {
 	rows, err := q.db.QueryContext(ctx, listDriversByVehicleType, vehicleType)
 	if err != nil {
 		return nil, err
@@ -289,20 +614,83 @@ func (q *Queries) ListDriversByVehicleType(ctx context.Context, vehicleType stri
 		var i Driver
 		if err := rows.Scan(
 			&i.ID,
+			&i.DriverID,
 			&i.UserID,
 			&i.LicenseNumber,
 			&i.LicenseExpiry,
 			&i.VehicleType,
 			&i.VehiclePlate,
+			&i.VehicleModel,
+			&i.VehicleYear,
 			&i.VehicleCapacity,
 			&i.Status,
 			&i.Rating,
 			&i.TotalDeliveries,
+			&i.CompletedDeliveries,
 			&i.BackgroundCheckStatus,
 			&i.BackgroundCheckDate,
+			&i.ProfileVerified,
+			&i.DocumentsVerified,
+			&i.CurrentLatitude,
+			&i.CurrentLongitude,
+			&i.CurrentLocation,
+			&i.LastLocationUpdate,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listDriversWithExpiredLicenses = `-- name: ListDriversWithExpiredLicenses :many
+SELECT id, driver_id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_model, vehicle_year, vehicle_capacity, status, rating, total_deliveries, completed_deliveries, background_check_status, background_check_date, profile_verified, documents_verified, current_latitude, current_longitude, current_location, last_location_update, created_at, updated_at FROM drivers
+WHERE license_expiry < now() + interval '30 days'
+ORDER BY license_expiry ASC
+`
+
+func (q *Queries) ListDriversWithExpiredLicenses(ctx context.Context) ([]Driver, error) {
+	rows, err := q.db.QueryContext(ctx, listDriversWithExpiredLicenses)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Driver{}
+	for rows.Next() {
+		var i Driver
+		if err := rows.Scan(
+			&i.ID,
 			&i.DriverID,
+			&i.UserID,
+			&i.LicenseNumber,
+			&i.LicenseExpiry,
+			&i.VehicleType,
+			&i.VehiclePlate,
+			&i.VehicleModel,
+			&i.VehicleYear,
+			&i.VehicleCapacity,
+			&i.Status,
+			&i.Rating,
+			&i.TotalDeliveries,
+			&i.CompletedDeliveries,
+			&i.BackgroundCheckStatus,
+			&i.BackgroundCheckDate,
+			&i.ProfileVerified,
+			&i.DocumentsVerified,
+			&i.CurrentLatitude,
+			&i.CurrentLongitude,
+			&i.CurrentLocation,
+			&i.LastLocationUpdate,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -324,23 +712,32 @@ SET
     license_expiry = COALESCE($3, license_expiry),
     vehicle_type = COALESCE($4, vehicle_type),
     vehicle_plate = COALESCE($5, vehicle_plate),
-    vehicle_capacity = COALESCE($6, vehicle_capacity),
-    status = COALESCE($7, status),
-    background_check_status = COALESCE($8, background_check_status),
-    updated_at = now()
+    vehicle_model = COALESCE($6, vehicle_model),
+    vehicle_year = COALESCE($7, vehicle_year),
+    vehicle_capacity = COALESCE($8, vehicle_capacity),
+    status = COALESCE($9, status),
+    background_check_status = COALESCE($10, background_check_status),
+    background_check_date = COALESCE($11, background_check_date),
+    profile_verified = COALESCE($12, profile_verified),
+    documents_verified = COALESCE($13, documents_verified)
 WHERE id = $1
-RETURNING id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_capacity, status, rating, total_deliveries, background_check_status, background_check_date, created_at, updated_at, driver_id
+RETURNING id, driver_id, user_id, license_number, license_expiry, vehicle_type, vehicle_plate, vehicle_model, vehicle_year, vehicle_capacity, status, rating, total_deliveries, completed_deliveries, background_check_status, background_check_date, profile_verified, documents_verified, current_latitude, current_longitude, current_location, last_location_update, created_at, updated_at
 `
 
 type UpdateDriverParams struct {
-	ID                    uuid.UUID `json:"id"`
-	LicenseNumber         string    `json:"license_number"`
-	LicenseExpiry         time.Time `json:"license_expiry"`
-	VehicleType           string    `json:"vehicle_type"`
-	VehiclePlate          string    `json:"vehicle_plate"`
-	VehicleCapacity       string    `json:"vehicle_capacity"`
-	Status                string    `json:"status"`
-	BackgroundCheckStatus string    `json:"background_check_status"`
+	ID                    uuid.UUID                 `json:"id"`
+	LicenseNumber         sql.NullString            `json:"license_number"`
+	LicenseExpiry         sql.NullTime              `json:"license_expiry"`
+	VehicleType           NullDriverVehicleType     `json:"vehicle_type"`
+	VehiclePlate          sql.NullString            `json:"vehicle_plate"`
+	VehicleModel          sql.NullString            `json:"vehicle_model"`
+	VehicleYear           sql.NullInt32             `json:"vehicle_year"`
+	VehicleCapacity       sql.NullString            `json:"vehicle_capacity"`
+	Status                NullDriverStatus          `json:"status"`
+	BackgroundCheckStatus NullBackgroundCheckStatus `json:"background_check_status"`
+	BackgroundCheckDate   sql.NullTime              `json:"background_check_date"`
+	ProfileVerified       sql.NullBool              `json:"profile_verified"`
+	DocumentsVerified     sql.NullBool              `json:"documents_verified"`
 }
 
 func (q *Queries) UpdateDriver(ctx context.Context, arg UpdateDriverParams) (Driver, error) {
@@ -350,64 +747,106 @@ func (q *Queries) UpdateDriver(ctx context.Context, arg UpdateDriverParams) (Dri
 		arg.LicenseExpiry,
 		arg.VehicleType,
 		arg.VehiclePlate,
+		arg.VehicleModel,
+		arg.VehicleYear,
 		arg.VehicleCapacity,
 		arg.Status,
 		arg.BackgroundCheckStatus,
+		arg.BackgroundCheckDate,
+		arg.ProfileVerified,
+		arg.DocumentsVerified,
 	)
 	var i Driver
 	err := row.Scan(
 		&i.ID,
+		&i.DriverID,
 		&i.UserID,
 		&i.LicenseNumber,
 		&i.LicenseExpiry,
 		&i.VehicleType,
 		&i.VehiclePlate,
+		&i.VehicleModel,
+		&i.VehicleYear,
 		&i.VehicleCapacity,
 		&i.Status,
 		&i.Rating,
 		&i.TotalDeliveries,
+		&i.CompletedDeliveries,
 		&i.BackgroundCheckStatus,
 		&i.BackgroundCheckDate,
+		&i.ProfileVerified,
+		&i.DocumentsVerified,
+		&i.CurrentLatitude,
+		&i.CurrentLongitude,
+		&i.CurrentLocation,
+		&i.LastLocationUpdate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.DriverID,
 	)
 	return i, err
 }
 
-const updateDriverRating = `-- name: UpdateDriverRating :exec
+const updateDriverLocation = `-- name: UpdateDriverLocation :exec
 UPDATE drivers
 SET 
-    rating = $2,
-    total_deliveries = total_deliveries + 1,
-    updated_at = now()
+    current_latitude = $2,
+    current_longitude = $3,
+    last_location_update = now()
 WHERE driver_id = $1
 `
 
-type UpdateDriverRatingParams struct {
-	DriverID string         `json:"driver_id"`
-	Rating   sql.NullString `json:"rating"`
+type UpdateDriverLocationParams struct {
+	DriverID         string         `json:"driver_id"`
+	CurrentLatitude  sql.NullString `json:"current_latitude"`
+	CurrentLongitude sql.NullString `json:"current_longitude"`
 }
 
-func (q *Queries) UpdateDriverRating(ctx context.Context, arg UpdateDriverRatingParams) error {
-	_, err := q.db.ExecContext(ctx, updateDriverRating, arg.DriverID, arg.Rating)
+func (q *Queries) UpdateDriverLocation(ctx context.Context, arg UpdateDriverLocationParams) error {
+	_, err := q.db.ExecContext(ctx, updateDriverLocation, arg.DriverID, arg.CurrentLatitude, arg.CurrentLongitude)
 	return err
 }
 
 const updateDriverStatus = `-- name: UpdateDriverStatus :exec
 UPDATE drivers
-SET 
-    status = $2,
-    updated_at = now()
+SET status = $2
 WHERE driver_id = $1
 `
 
 type UpdateDriverStatusParams struct {
-	DriverID string `json:"driver_id"`
-	Status   string `json:"status"`
+	DriverID string       `json:"driver_id"`
+	Status   DriverStatus `json:"status"`
 }
 
 func (q *Queries) UpdateDriverStatus(ctx context.Context, arg UpdateDriverStatusParams) error {
 	_, err := q.db.ExecContext(ctx, updateDriverStatus, arg.DriverID, arg.Status)
+	return err
+}
+
+const updateDriverVerification = `-- name: UpdateDriverVerification :exec
+UPDATE drivers
+SET 
+    background_check_status = $2,
+    background_check_date = $3,
+    profile_verified = $4,
+    documents_verified = $5
+WHERE driver_id = $1
+`
+
+type UpdateDriverVerificationParams struct {
+	DriverID              string                `json:"driver_id"`
+	BackgroundCheckStatus BackgroundCheckStatus `json:"background_check_status"`
+	BackgroundCheckDate   sql.NullTime          `json:"background_check_date"`
+	ProfileVerified       sql.NullBool          `json:"profile_verified"`
+	DocumentsVerified     sql.NullBool          `json:"documents_verified"`
+}
+
+func (q *Queries) UpdateDriverVerification(ctx context.Context, arg UpdateDriverVerificationParams) error {
+	_, err := q.db.ExecContext(ctx, updateDriverVerification,
+		arg.DriverID,
+		arg.BackgroundCheckStatus,
+		arg.BackgroundCheckDate,
+		arg.ProfileVerified,
+		arg.DocumentsVerified,
+	)
 	return err
 }

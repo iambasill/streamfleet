@@ -25,16 +25,16 @@ INSERT INTO customers (
 ) VALUES (
     $1, $2, $3, $4, $5, $6
 )
-RETURNING id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, created_at, updated_at, customer_id
+RETURNING id, customer_id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, total_spent, total_orders, created_at, updated_at
 `
 
 type CreateCustomerParams struct {
-	UserID         string         `json:"user_id"`
-	CompanyName    sql.NullString `json:"company_name"`
-	BusinessType   sql.NullString `json:"business_type"`
-	BillingAddress string         `json:"billing_address"`
-	PaymentMethod  sql.NullString `json:"payment_method"`
-	CreditLimit    sql.NullString `json:"credit_limit"`
+	UserID         string                `json:"user_id"`
+	CompanyName    sql.NullString        `json:"company_name"`
+	BusinessType   NullBusinessType      `json:"business_type"`
+	BillingAddress string                `json:"billing_address"`
+	PaymentMethod  NullPaymentMethodType `json:"payment_method"`
+	CreditLimit    sql.NullString        `json:"credit_limit"`
 }
 
 // ============================================
@@ -52,21 +52,23 @@ func (q *Queries) CreateCustomer(ctx context.Context, arg CreateCustomerParams) 
 	var i Customer
 	err := row.Scan(
 		&i.ID,
+		&i.CustomerID,
 		&i.UserID,
 		&i.CompanyName,
 		&i.BusinessType,
 		&i.BillingAddress,
 		&i.PaymentMethod,
 		&i.CreditLimit,
+		&i.TotalSpent,
+		&i.TotalOrders,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.CustomerID,
 	)
 	return i, err
 }
 
 const getCustomer = `-- name: GetCustomer :one
-SELECT id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, created_at, updated_at, customer_id FROM customers
+SELECT id, customer_id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, total_spent, total_orders, created_at, updated_at FROM customers
 WHERE id = $1 LIMIT 1
 `
 
@@ -75,21 +77,23 @@ func (q *Queries) GetCustomer(ctx context.Context, id uuid.UUID) (Customer, erro
 	var i Customer
 	err := row.Scan(
 		&i.ID,
+		&i.CustomerID,
 		&i.UserID,
 		&i.CompanyName,
 		&i.BusinessType,
 		&i.BillingAddress,
 		&i.PaymentMethod,
 		&i.CreditLimit,
+		&i.TotalSpent,
+		&i.TotalOrders,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.CustomerID,
 	)
 	return i, err
 }
 
 const getCustomerByCustomerID = `-- name: GetCustomerByCustomerID :one
-SELECT id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, created_at, updated_at, customer_id FROM customers
+SELECT id, customer_id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, total_spent, total_orders, created_at, updated_at FROM customers
 WHERE customer_id = $1 LIMIT 1
 `
 
@@ -98,21 +102,23 @@ func (q *Queries) GetCustomerByCustomerID(ctx context.Context, customerID string
 	var i Customer
 	err := row.Scan(
 		&i.ID,
+		&i.CustomerID,
 		&i.UserID,
 		&i.CompanyName,
 		&i.BusinessType,
 		&i.BillingAddress,
 		&i.PaymentMethod,
 		&i.CreditLimit,
+		&i.TotalSpent,
+		&i.TotalOrders,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.CustomerID,
 	)
 	return i, err
 }
 
 const getCustomerByUserID = `-- name: GetCustomerByUserID :one
-SELECT id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, created_at, updated_at, customer_id FROM customers
+SELECT id, customer_id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, total_spent, total_orders, created_at, updated_at FROM customers
 WHERE user_id = $1 LIMIT 1
 `
 
@@ -121,22 +127,56 @@ func (q *Queries) GetCustomerByUserID(ctx context.Context, userID string) (Custo
 	var i Customer
 	err := row.Scan(
 		&i.ID,
+		&i.CustomerID,
 		&i.UserID,
 		&i.CompanyName,
 		&i.BusinessType,
 		&i.BillingAddress,
 		&i.PaymentMethod,
 		&i.CreditLimit,
+		&i.TotalSpent,
+		&i.TotalOrders,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getCustomerStats = `-- name: GetCustomerStats :one
+SELECT 
+    customer_id,
+    total_orders,
+    total_spent,
+    credit_limit,
+    credit_limit - total_spent AS available_credit
+FROM customers
+WHERE customer_id = $1
+`
+
+type GetCustomerStatsRow struct {
+	CustomerID      string         `json:"customer_id"`
+	TotalOrders     sql.NullInt32  `json:"total_orders"`
+	TotalSpent      sql.NullString `json:"total_spent"`
+	CreditLimit     sql.NullString `json:"credit_limit"`
+	AvailableCredit int32          `json:"available_credit"`
+}
+
+func (q *Queries) GetCustomerStats(ctx context.Context, customerID string) (GetCustomerStatsRow, error) {
+	row := q.db.QueryRowContext(ctx, getCustomerStats, customerID)
+	var i GetCustomerStatsRow
+	err := row.Scan(
 		&i.CustomerID,
+		&i.TotalOrders,
+		&i.TotalSpent,
+		&i.CreditLimit,
+		&i.AvailableCredit,
 	)
 	return i, err
 }
 
 const getCustomerWithUser = `-- name: GetCustomerWithUser :one
 SELECT 
-    c.id, c.user_id, c.company_name, c.business_type, c.billing_address, c.payment_method, c.credit_limit, c.created_at, c.updated_at, c.customer_id,
+    c.id, c.customer_id, c.user_id, c.company_name, c.business_type, c.billing_address, c.payment_method, c.credit_limit, c.total_spent, c.total_orders, c.created_at, c.updated_at,
     u.first_name,
     u.last_name,
     u.email,
@@ -150,22 +190,24 @@ LIMIT 1
 `
 
 type GetCustomerWithUserRow struct {
-	ID             uuid.UUID      `json:"id"`
-	UserID         string         `json:"user_id"`
-	CompanyName    sql.NullString `json:"company_name"`
-	BusinessType   sql.NullString `json:"business_type"`
-	BillingAddress string         `json:"billing_address"`
-	PaymentMethod  sql.NullString `json:"payment_method"`
-	CreditLimit    sql.NullString `json:"credit_limit"`
-	CreatedAt      time.Time      `json:"created_at"`
-	UpdatedAt      time.Time      `json:"updated_at"`
-	CustomerID     string         `json:"customer_id"`
-	FirstName      string         `json:"first_name"`
-	LastName       string         `json:"last_name"`
-	Email          string         `json:"email"`
-	Phone          string         `json:"phone"`
-	Avatar         sql.NullString `json:"avatar"`
-	UserStatus     string         `json:"user_status"`
+	ID             uuid.UUID             `json:"id"`
+	CustomerID     string                `json:"customer_id"`
+	UserID         string                `json:"user_id"`
+	CompanyName    sql.NullString        `json:"company_name"`
+	BusinessType   NullBusinessType      `json:"business_type"`
+	BillingAddress string                `json:"billing_address"`
+	PaymentMethod  NullPaymentMethodType `json:"payment_method"`
+	CreditLimit    sql.NullString        `json:"credit_limit"`
+	TotalSpent     sql.NullString        `json:"total_spent"`
+	TotalOrders    sql.NullInt32         `json:"total_orders"`
+	CreatedAt      time.Time             `json:"created_at"`
+	UpdatedAt      time.Time             `json:"updated_at"`
+	FirstName      string                `json:"first_name"`
+	LastName       string                `json:"last_name"`
+	Email          string                `json:"email"`
+	Phone          string                `json:"phone"`
+	Avatar         sql.NullString        `json:"avatar"`
+	UserStatus     UserStatus            `json:"user_status"`
 }
 
 func (q *Queries) GetCustomerWithUser(ctx context.Context, customerID string) (GetCustomerWithUserRow, error) {
@@ -173,15 +215,17 @@ func (q *Queries) GetCustomerWithUser(ctx context.Context, customerID string) (G
 	var i GetCustomerWithUserRow
 	err := row.Scan(
 		&i.ID,
+		&i.CustomerID,
 		&i.UserID,
 		&i.CompanyName,
 		&i.BusinessType,
 		&i.BillingAddress,
 		&i.PaymentMethod,
 		&i.CreditLimit,
+		&i.TotalSpent,
+		&i.TotalOrders,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.CustomerID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
@@ -192,6 +236,138 @@ func (q *Queries) GetCustomerWithUser(ctx context.Context, customerID string) (G
 	return i, err
 }
 
+const getTopCustomers = `-- name: GetTopCustomers :many
+SELECT id, customer_id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, total_spent, total_orders, created_at, updated_at FROM customers
+WHERE total_spent > 0
+ORDER BY total_spent DESC
+LIMIT $1
+`
+
+func (q *Queries) GetTopCustomers(ctx context.Context, limit int32) ([]Customer, error) {
+	rows, err := q.db.QueryContext(ctx, getTopCustomers, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Customer{}
+	for rows.Next() {
+		var i Customer
+		if err := rows.Scan(
+			&i.ID,
+			&i.CustomerID,
+			&i.UserID,
+			&i.CompanyName,
+			&i.BusinessType,
+			&i.BillingAddress,
+			&i.PaymentMethod,
+			&i.CreditLimit,
+			&i.TotalSpent,
+			&i.TotalOrders,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCustomers = `-- name: ListCustomers :many
+SELECT id, customer_id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, total_spent, total_orders, created_at, updated_at FROM customers
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type ListCustomersParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListCustomers(ctx context.Context, arg ListCustomersParams) ([]Customer, error) {
+	rows, err := q.db.QueryContext(ctx, listCustomers, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Customer{}
+	for rows.Next() {
+		var i Customer
+		if err := rows.Scan(
+			&i.ID,
+			&i.CustomerID,
+			&i.UserID,
+			&i.CompanyName,
+			&i.BusinessType,
+			&i.BillingAddress,
+			&i.PaymentMethod,
+			&i.CreditLimit,
+			&i.TotalSpent,
+			&i.TotalOrders,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCustomersByBusinessType = `-- name: ListCustomersByBusinessType :many
+SELECT id, customer_id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, total_spent, total_orders, created_at, updated_at FROM customers
+WHERE business_type = $1
+ORDER BY total_spent DESC
+`
+
+func (q *Queries) ListCustomersByBusinessType(ctx context.Context, businessType NullBusinessType) ([]Customer, error) {
+	rows, err := q.db.QueryContext(ctx, listCustomersByBusinessType, businessType)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Customer{}
+	for rows.Next() {
+		var i Customer
+		if err := rows.Scan(
+			&i.ID,
+			&i.CustomerID,
+			&i.UserID,
+			&i.CompanyName,
+			&i.BusinessType,
+			&i.BillingAddress,
+			&i.PaymentMethod,
+			&i.CreditLimit,
+			&i.TotalSpent,
+			&i.TotalOrders,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateCustomer = `-- name: UpdateCustomer :one
 UPDATE customers
 SET 
@@ -199,19 +375,18 @@ SET
     business_type = COALESCE($3, business_type),
     billing_address = COALESCE($4, billing_address),
     payment_method = COALESCE($5, payment_method),
-    credit_limit = COALESCE($6, credit_limit),
-    updated_at = now()
+    credit_limit = COALESCE($6, credit_limit)
 WHERE id = $1
-RETURNING id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, created_at, updated_at, customer_id
+RETURNING id, customer_id, user_id, company_name, business_type, billing_address, payment_method, credit_limit, total_spent, total_orders, created_at, updated_at
 `
 
 type UpdateCustomerParams struct {
-	ID             uuid.UUID      `json:"id"`
-	CompanyName    sql.NullString `json:"company_name"`
-	BusinessType   sql.NullString `json:"business_type"`
-	BillingAddress string         `json:"billing_address"`
-	PaymentMethod  sql.NullString `json:"payment_method"`
-	CreditLimit    sql.NullString `json:"credit_limit"`
+	ID             uuid.UUID             `json:"id"`
+	CompanyName    sql.NullString        `json:"company_name"`
+	BusinessType   NullBusinessType      `json:"business_type"`
+	BillingAddress sql.NullString        `json:"billing_address"`
+	PaymentMethod  NullPaymentMethodType `json:"payment_method"`
+	CreditLimit    sql.NullString        `json:"credit_limit"`
 }
 
 func (q *Queries) UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) (Customer, error) {
@@ -226,15 +401,33 @@ func (q *Queries) UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) 
 	var i Customer
 	err := row.Scan(
 		&i.ID,
+		&i.CustomerID,
 		&i.UserID,
 		&i.CompanyName,
 		&i.BusinessType,
 		&i.BillingAddress,
 		&i.PaymentMethod,
 		&i.CreditLimit,
+		&i.TotalSpent,
+		&i.TotalOrders,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.CustomerID,
 	)
 	return i, err
+}
+
+const updateCustomerCreditLimit = `-- name: UpdateCustomerCreditLimit :exec
+UPDATE customers
+SET credit_limit = $2
+WHERE customer_id = $1
+`
+
+type UpdateCustomerCreditLimitParams struct {
+	CustomerID  string         `json:"customer_id"`
+	CreditLimit sql.NullString `json:"credit_limit"`
+}
+
+func (q *Queries) UpdateCustomerCreditLimit(ctx context.Context, arg UpdateCustomerCreditLimitParams) error {
+	_, err := q.db.ExecContext(ctx, updateCustomerCreditLimit, arg.CustomerID, arg.CreditLimit)
+	return err
 }
