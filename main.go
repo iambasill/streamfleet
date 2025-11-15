@@ -4,6 +4,9 @@ import (
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	cmd "github.com/iambasill/streamfleet/cmd"
 )
 
 func main() {
@@ -13,7 +16,7 @@ func main() {
 	// 	log.Fatal("Cannot connect to database:", err)
 	// }
 	// runMigration(dbEnv.DbSource, "file://src/database/migrations/")
-	RunHttpServer()
+	cmd.RunHttpServer()
 
 }
 
@@ -30,3 +33,4 @@ func runMigration(dbSource string, migrationsDir string) {
 	}
 	log.Println(" Database migration completed successfully")
 }
+

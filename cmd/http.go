@@ -1,11 +1,12 @@
-package main
+package cmd
 
 import (
 	"log"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/iambasill/streamfleet/src/configs"
 	"github.com/iambasill/streamfleet/src/database"
 	dbq "github.com/iambasill/streamfleet/src/database/sqlc"
@@ -61,35 +62,3 @@ func RunHttpServer() {
 	}
 
 }
-
-// func RunHttpServerWithShutdown() {
-// 	// ... [previous setup code]
-
-// 	httpServer := &http.Server{
-// 		Addr:    ":" + env.HTTPPort,
-// 		Handler: router,
-// 	}
-
-// 	// Run server in a goroutine
-// 	go func() {
-// 		log.Printf("Starting HTTP server on port %s...", env.HTTPPort)
-// 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-// 			log.Fatalf("Failed to run HTTP server: %v", err)
-// 		}
-// 	}()
-
-// 	// Wait for interrupt signal to gracefully shutdown
-// 	quit := make(chan os.Signal, 1)
-// 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-// 	<-quit
-// 	log.Println("Shutting down server...")
-
-// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-// 	defer cancel()
-
-// 	if err := httpServer.Shutdown(ctx); err != nil {
-// 		log.Fatal("Server forced to shutdown:", err)
-// 	}
-
-// 	log.Println("Server exited")
-// }
