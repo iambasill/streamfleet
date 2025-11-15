@@ -4,48 +4,19 @@ import (
 	"log"
 	"net"
 
-	"github.com/iambasill/streamfleet/src/configs"
-	pb "github.com/iambasill/streamfleet/src/pb"
-
-	"github.com/iambasill/streamfleet/src/controllers"
-	"github.com/iambasill/streamfleet/src/database"
-	dbq "github.com/iambasill/streamfleet/src/database/sqlc"
-
-	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+
+	"github.com/iambasill/streamfleet/src/configs"
+	"github.com/iambasill/streamfleet/src/database"
+	dbq "github.com/iambasill/streamfleet/src/database/sqlc"
+	controllers "github.com/iambasill/streamfleet/src/grpc"
+	pb "github.com/iambasill/streamfleet/src/grpc/services"
 )
 
-func main() {
-
-	dbEnv, err := configs.DatabaseConfig(".")
-	if err != nil {
-		log.Fatal("Cannot connect to database:", err)
-	}
-	runMigration(dbEnv.DbSource, "file://src/database/migrations/")
-
-	runGrpcServer()
-
-}
-
-func runMigration(dbSource string, migrationsDir string) {
-	m, err := migrate.New(
-		migrationsDir,
-		dbSource,
-	)
-	if err != nil {
-		log.Fatalf("Failed to start migration: %v", err)
-	}
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("Migration failed: %v", err)
-	}
-	log.Println("✅ Database migration completed successfully")
-}
-
-func runGrpcServer() {
+func RunGrpcServer() {
 	DBenv, err := configs.DatabaseConfig(".")
 	if err != nil {
 		log.Fatal("Cannot access Database Variables:", err)
