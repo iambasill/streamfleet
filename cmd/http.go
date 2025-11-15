@@ -56,8 +56,8 @@ func RunHttpServer() {
 
 	routes.RootRouter(server, controller)
 
-	log.Printf("Starting HTTP server on port %s...", env.HTTP_SERVER_PORT)
-	if err := server.Run(":" + env.HTTP_SERVER_PORT); err != nil {
+	log.Printf("Starting HTTP server on port %s...", env.HTTP_SERVER_ADDRESS)
+	if err := server.Run(":" + env.HTTP_SERVER_ADDRESS); err != nil {
 		log.Fatalf("Failed to run HTTP server: %v", err)
 	}
 
