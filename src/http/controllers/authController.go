@@ -1,0 +1,54 @@
+package http
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	database "github.com/iambasill/streamfleet/src/database/sqlc"
+	"github.com/iambasill/streamfleet/src/utils"
+)
+
+func (server *Server) Register(ctx *gin.Context) {
+	type RegisterRequest struct{
+		FirstName string `json:"firstName" binding:"required"`
+		LastName  string `json:"lastName" binding:"required"`
+		Email     string `json:"email" binding:"required,email"`
+		Password  string `json:"password" binding:"required,min=8"`
+		Phone     string `json:"phone" binding:"required"`
+		Role      database.UserRole `json:"role" binding:"required,oneof=admin dispatcher customer driver"`
+	}
+
+	var req RegisterRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "details": err.Error()})
+		return
+	}
+
+	hashedPassword, err := utils.HashPassword(req.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		return
+	}
+
+	arg := database.CreateUserParams{
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     req.Email,
+		Password:  hashedPassword,
+		Phone:     req.Phone,
+		Role:      req.Role,
+	}
+
+	user, err := server.dbq.CreateUser(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user", "details": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{
+		"message":   "User registered successfully",
+		"firstName": user.FirstName,
+		"lastName":  user.LastName,
+		"email":     user.Email,
+		"phone":     user.Phone,})
+}

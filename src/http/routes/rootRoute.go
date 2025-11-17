@@ -1,4 +1,4 @@
-package routes
+package http
 
 import (
 	"net/http"
@@ -6,8 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	controllers "github.com/iambasill/streamfleet/src/http"
-
+	controllers "github.com/iambasill/streamfleet/src/http/controllers"
 )
 
 func RootRouter(router *gin.Engine, controllers *controllers.Server) *gin.Engine {
@@ -17,7 +16,7 @@ func RootRouter(router *gin.Engine, controllers *controllers.Server) *gin.Engine
 	// }
 
 	// API routes group
-	apiRoutes := router.Group("/api")
+	apiRoutes := router.Group("/api/v1")
 	authRoute(apiRoutes, controllers)
 
 	// Health check endpoint

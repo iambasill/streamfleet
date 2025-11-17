@@ -1,17 +1,18 @@
-package routes
+package http
 
 import (
 	"github.com/gin-gonic/gin"
 
-	controllers "github.com/iambasill/streamfleet/src/http"
+	controller "github.com/iambasill/streamfleet/src/http/controllers"
 )
 
-func authRoute(router *gin.RouterGroup, server *controllers.Server) {
+func authRoute(router *gin.RouterGroup, server *controller.Server) {
 	authRoutes := router.Group("/auth")
 	{
 		authRoutes.POST("/login")
-		authRoutes.POST("/register")
+		authRoutes.POST("/register", server.Register)
 		authRoutes.POST("/logout")
 		authRoutes.POST("/refresh")
+		authRoutes.GET("/me")
 	}
 }

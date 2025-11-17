@@ -10,7 +10,7 @@ import (
 	"github.com/iambasill/streamfleet/src/configs"
 	"github.com/iambasill/streamfleet/src/database"
 	dbq "github.com/iambasill/streamfleet/src/database/sqlc"
-	controllers "github.com/iambasill/streamfleet/src/http"
+	controller "github.com/iambasill/streamfleet/src/http/controllers"
 	routes "github.com/iambasill/streamfleet/src/http/routes"
 )
 
@@ -39,7 +39,7 @@ func RunHttpServer() {
 
 	// Initialize dependencies
 	dbqueries := dbq.NewDBQuery(conn)
-	controller := controllers.NewServer(dbqueries)
+	controller := controller.NewServer(dbqueries)
 
 	corsConfig := cors.Config{
 		AllowOrigins:     []string{"*"},
