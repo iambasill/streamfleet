@@ -1,11 +1,14 @@
 package http
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	database "github.com/iambasill/streamfleet/src/database/sqlc"
 	"github.com/iambasill/streamfleet/src/utils"
+	"github.com/lib/pq"
 )
 
 func (server *Server) Register(ctx *gin.Context) {
@@ -17,13 +20,18 @@ func (server *Server) Register(ctx *gin.Context) {
 		Phone     string `json:"phone" binding:"required"`
 		Role      database.UserRole `json:"role" binding:"required,oneof=admin dispatcher customer driver"`
 	}
-
 	var req RegisterRequest
+
+
+
+
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "details": err.Error()})
+		errDetails := utils.FormatValidationError(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "details": errDetails})
 		return
 	}
 
+	
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
@@ -41,6 +49,13 @@ func (server *Server) Register(ctx *gin.Context) {
 
 	user, err := server.dbq.CreateUser(ctx, arg)
 	if err != nil {
+		var pqErr *pq.Error
+        if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+            ctx.JSON(http.StatusConflict, gin.H{
+                "error": "Email already exists",
+            })
+            return
+        }
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user", "details": err.Error()})
 		return
 	}
@@ -50,5 +65,54 @@ func (server *Server) Register(ctx *gin.Context) {
 		"firstName": user.FirstName,
 		"lastName":  user.LastName,
 		"email":     user.Email,
-		"phone":     user.Phone,})
+		"phone":     user.Phone,
+		"password": user.Password,
+	})
+}
+
+func (server *Server) Login (ctx *gin.Context) {
+	type LoginRequest struct {
+		Email string	 	`json:"email" binding:"required,email"`
+		Password string 	`json:"password" binding:"required,min=6"`
+	}
+
+	var req LoginRequest
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		message := utils.FormatValidationError(err)
+
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message":message,
+		})
+		return
+	}
+
+	user, err := server.dbq.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		if err == sql.ErrNoRows{
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"success": false,
+				"message":"Invalid Credentials!",
+			})
+		return
+		}
+		
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+		"error": err.Error(),})
+		return
+	}
+
+	validPassword := utils.VerifyPassword(req.Password,user.Password)
+	if !validPassword {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+		"success": false,
+		"message":"Invalid Credentials!",
+		})
+		return
+	}		
+	
+		ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message":"Login successful",
+		})		
 }

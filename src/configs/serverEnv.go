@@ -7,6 +7,8 @@ import (
 type ENV struct {
 	GRPC_SERVER_ADDRESS string `mapstructure:"GRPC_SERVER_ADDRESS"`
 	HTTP_SERVER_ADDRESS string `mapstructure:"HTTP_SERVER_ADDRESS"`
+	JWT_AUTH_SECRET string `mapstructure:"JWT_AUTH_SECRET"`
+
 }
 
 func ENVConfig(path string) (config ENV, err error) {

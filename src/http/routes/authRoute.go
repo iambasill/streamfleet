@@ -9,7 +9,7 @@ import (
 func authRoute(router *gin.RouterGroup, server *controller.Server) {
 	authRoutes := router.Group("/auth")
 	{
-		authRoutes.POST("/login")
+		authRoutes.POST("/login", server.Login)
 		authRoutes.POST("/register", server.Register)
 		authRoutes.POST("/logout")
 		authRoutes.POST("/refresh")
