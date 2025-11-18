@@ -111,8 +111,15 @@ func (server *Server) Login (ctx *gin.Context) {
 		return
 	}		
 	
+	token, err := utils.CreateToken(user.UserID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+		"error": err.Error(),})
+		return
+	}
 		ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message":"Login successful",
+		"access": token,
 		})		
 }
