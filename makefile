@@ -7,8 +7,12 @@ DB_URL = postgres://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_DAT
 DB_URL_NO_DB = postgres://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/postgres?sslmode=disable
 
 # Migration commands
+
+migrate-clean:
+	migrate -path src/database/migrations -database "$(DB_URL)" force 2
+
 migrateup:
-	migrate -path src/database/migrations -database "$(DB_URL)" up
+	migrate -path src/database/migrations -database "$(DB_URL)" up 
 
 migratedown:
 	migrate -path src/database/migrations -database "$(DB_URL)" down
@@ -69,4 +73,4 @@ server:
 web:
 	grpcui -plaintext $(GRPC_SERVER_ADDRESS)
 
-.PHONY: server web migrateup migratedown migratedown-all migrate-to-version migrate-force migrate-version migrate-create db-reset db-reset-alt db-reset-sudo db-connect db-test show-env db-create db-drop proto
+.PHONY: migrate-clean server web migrateup migratedown migratedown-all migrate-to-version migrate-force migrate-version migrate-create db-reset db-reset-alt db-reset-sudo db-connect db-test show-env db-create db-drop proto
