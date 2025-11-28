@@ -77,8 +77,8 @@ type CreateUserParams struct {
 	Email     string         `json:"email"`
 	Password  string         `json:"password"`
 	Phone     string         `json:"phone"`
-	Role      UserRole       `json:"role"`
-	Status    UserStatus     `json:"status"`
+	Role      string         `json:"role"`
+	Status    string         `json:"status"`
 	Avatar    sql.NullString `json:"avatar"`
 }
 
@@ -381,7 +381,7 @@ WHERE role = $1
 ORDER BY created_at DESC
 `
 
-func (q *Queries) ListUsersByRole(ctx context.Context, role UserRole) ([]User, error) {
+func (q *Queries) ListUsersByRole(ctx context.Context, role string) ([]User, error) {
 	rows, err := q.db.QueryContext(ctx, listUsersByRole, role)
 	if err != nil {
 		return nil, err
@@ -427,8 +427,8 @@ ORDER BY created_at DESC
 `
 
 type ListUsersByRoleAndStatusParams struct {
-	Role   UserRole   `json:"role"`
-	Status UserStatus `json:"status"`
+	Role   string `json:"role"`
+	Status string `json:"status"`
 }
 
 func (q *Queries) ListUsersByRoleAndStatus(ctx context.Context, arg ListUsersByRoleAndStatusParams) ([]User, error) {
@@ -476,7 +476,7 @@ WHERE status = $1
 ORDER BY created_at DESC
 `
 
-func (q *Queries) ListUsersByStatus(ctx context.Context, status UserStatus) ([]User, error) {
+func (q *Queries) ListUsersByStatus(ctx context.Context, status string) ([]User, error) {
 	rows, err := q.db.QueryContext(ctx, listUsersByStatus, status)
 	if err != nil {
 		return nil, err
@@ -565,7 +565,7 @@ type UpdateUserParams struct {
 	Email     sql.NullString `json:"email"`
 	Phone     sql.NullString `json:"phone"`
 	Avatar    sql.NullString `json:"avatar"`
-	Status    NullUserStatus `json:"status"`
+	Status    sql.NullString `json:"status"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {

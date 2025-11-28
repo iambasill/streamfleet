@@ -1170,13 +1170,22 @@ type User struct {
 	Password     string         `json:"password"`
 	Phone        string         `json:"phone"`
 	Avatar       sql.NullString `json:"avatar"`
-	Role         UserRole       `json:"role"`
-	Status       UserStatus     `json:"status"`
+	Role         string         `json:"role"`
+	Status       string         `json:"status"`
 	Token        sql.NullString `json:"token"`
 	RefreshToken sql.NullString `json:"refresh_token"`
 	LastLoginAt  sql.NullTime   `json:"last_login_at"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
+}
+
+type UserSession struct {
+	ID           uuid.UUID `json:"id"`
+	UserID       string    `json:"user_id"`
+	SessionToken string    `json:"session_token"`
+	Status       string    `json:"status"`
+	CreatedAt    time.Time `json:"created_at"`
+	ExpiresAt    time.Time `json:"expires_at"`
 }
 
 type VehicleMaintenance struct {

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	database "github.com/iambasill/streamfleet/src/database/sqlc"
@@ -18,7 +19,7 @@ func (server *Server) Register(ctx *gin.Context) {
 		Email     string `json:"email" binding:"required,email"`
 		Password  string `json:"password" binding:"required,min=8"`
 		Phone     string `json:"phone" binding:"required"`
-		Role      database.UserRole `json:"role" binding:"required,oneof=admin dispatcher customer driver"`
+		Role      string `json:"role" binding:"required,oneof=admin dispatcher customer driver"`
 	}
 	var req RegisterRequest
 
@@ -117,9 +118,30 @@ func (server *Server) Login (ctx *gin.Context) {
 		"error": err.Error(),})
 		return
 	}
-		ctx.JSON(http.StatusOK, gin.H{
+
+
+	refreshToken, _ := utils.CreateToken(user.UserID)
+
+	// 
+   	args := database.CreateUserSessionParams{
+      UserID: user.UserID,
+      SessionToken: refreshToken,
+      ExpiresAt: time.Now().Add(24 * time.Hour),
+   }
+
+   // Store the session in the database
+  	 _, sessionErr := server.dbq.CreateUserSession(ctx , args)
+   if sessionErr != nil {
+      ctx.JSON(http.StatusInternalServerError, gin.H{
+		 "error": sessionErr.Error(),
+	  })	
+      return 
+   }
+   
+	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message":"Login successful",
 		"access": token,
+		"refresh": refreshToken,
 		})		
 }

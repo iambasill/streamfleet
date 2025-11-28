@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+
 func FormatValidationError(err error) map[string]string {
 	errors := make(map[string]string)
 

@@ -29,7 +29,7 @@ CREATE TYPE zone_type AS ENUM ('urban', 'suburban', 'rural');
 -- =============================================
 CREATE TABLE "users" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "user_id" varchar(100) UNIQUE NOT NULL DEFAULT ('USR-' || substring(gen_random_uuid()::text, 1, 8)),
+  "user_id" varchar(100) UNIQUE NOT NULL DEFAULT gen_random_uuid(),
   "first_name" varchar(100) NOT NULL,
   "last_name" varchar(100) NOT NULL,
   "email" varchar(255) UNIQUE NOT NULL,

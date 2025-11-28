@@ -27,10 +27,15 @@ type Querier interface {
 	// ============================================
 	CreateDriver(ctx context.Context, arg CreateDriverParams) (Driver, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// ============================================
+	// USER SESSIONS QUERIES
+	// ============================================
+	CreateUserSession(ctx context.Context, arg CreateUserSessionParams) (UserSession, error)
 	DeactivateAddress(ctx context.Context, id uuid.UUID) error
 	DeactivateUser(ctx context.Context, id uuid.UUID) (User, error)
 	DeleteAddress(ctx context.Context, id uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
+	DeleteUserSession(ctx context.Context, id uuid.UUID) error
 	FindNearbyAddresses(ctx context.Context, arg FindNearbyAddressesParams) ([]FindNearbyAddressesRow, error)
 	FindNearbyDrivers(ctx context.Context, arg FindNearbyDriversParams) ([]FindNearbyDriversRow, error)
 	GetAddress(ctx context.Context, id uuid.UUID) (Address, error)
@@ -56,6 +61,7 @@ type Querier interface {
 	GetUserByUserID(ctx context.Context, userID string) (User, error)
 	GetUserByUserIDForUpdate(ctx context.Context, userID string) (User, error)
 	GetUserForUpdate(ctx context.Context, id uuid.UUID) (User, error)
+	GetUserSession(ctx context.Context, arg GetUserSessionParams) (UserSession, error)
 	IncrementDriverDeliveries(ctx context.Context, driverID string) error
 	ListAllUserAddresses(ctx context.Context, userID string) ([]Address, error)
 	ListAvailableDrivers(ctx context.Context) ([]Driver, error)
@@ -66,9 +72,9 @@ type Querier interface {
 	ListDriversWithExpiredLicenses(ctx context.Context) ([]Driver, error)
 	ListUserAddresses(ctx context.Context, userID string) ([]Address, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
-	ListUsersByRole(ctx context.Context, role UserRole) ([]User, error)
+	ListUsersByRole(ctx context.Context, role string) ([]User, error)
 	ListUsersByRoleAndStatus(ctx context.Context, arg ListUsersByRoleAndStatusParams) ([]User, error)
-	ListUsersByStatus(ctx context.Context, status UserStatus) ([]User, error)
+	ListUsersByStatus(ctx context.Context, status string) ([]User, error)
 	SearchAddressesByCity(ctx context.Context, arg SearchAddressesByCityParams) ([]Address, error)
 	SetDefaultAddress(ctx context.Context, arg SetDefaultAddressParams) error
 	SuspendUser(ctx context.Context, id uuid.UUID) (User, error)

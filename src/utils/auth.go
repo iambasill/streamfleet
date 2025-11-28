@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -54,8 +55,3 @@ func VerifyPassword(password, hash string) bool {
     return err == nil
 }
 
-func ManageSession(userId string) string {
-   refreshToken, err := CreateToken(userId)
-   
-   
-}

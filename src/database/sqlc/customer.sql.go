@@ -207,7 +207,7 @@ type GetCustomerWithUserRow struct {
 	Email          string                `json:"email"`
 	Phone          string                `json:"phone"`
 	Avatar         sql.NullString        `json:"avatar"`
-	UserStatus     UserStatus            `json:"user_status"`
+	UserStatus     string                `json:"user_status"`
 }
 
 func (q *Queries) GetCustomerWithUser(ctx context.Context, customerID string) (GetCustomerWithUserRow, error) {
