@@ -8,17 +8,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 	database "github.com/iambasill/streamfleet/src/database/sqlc"
+	middleware "github.com/iambasill/streamfleet/src/http/middlewares"
 	"github.com/iambasill/streamfleet/src/utils"
 	"github.com/lib/pq"
 )
 
 func (server *Server) Register(ctx *gin.Context) {
 	type RegisterRequest struct{
-		FirstName string `json:"firstName" binding:"required"`
-		LastName  string `json:"lastName" binding:"required"`
-		Email     string `json:"email" binding:"required,email"`
-		Password  string `json:"password" binding:"required,min=8"`
-		Phone     string `json:"phone" binding:"required"`
+		FirstName string `json:"firstName" binding:"required,max=100"`
+		LastName  string `json:"lastName" binding:"required,max=100"`
+		Email     string `json:"email" binding:"required,email,max=100"`
+		Password  string `json:"password" binding:"required,min=8,max=100"`
+		PhoneNumber     string `json:"phoneNumber" binding:"required,max=100"`
 		Role      string `json:"role" binding:"required,oneof=admin dispatcher customer driver"`
 	}
 	var req RegisterRequest
@@ -32,7 +33,7 @@ func (server *Server) Register(ctx *gin.Context) {
 		return
 	}
 
-	
+
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
@@ -44,7 +45,7 @@ func (server *Server) Register(ctx *gin.Context) {
 		LastName:  req.LastName,
 		Email:     req.Email,
 		Password:  hashedPassword,
-		Phone:     req.Phone,
+		Phone:     req.PhoneNumber,
 		Role:      req.Role,
 	}
 
@@ -73,8 +74,8 @@ func (server *Server) Register(ctx *gin.Context) {
 
 func (server *Server) Login (ctx *gin.Context) {
 	type LoginRequest struct {
-		Email string	 	`json:"email" binding:"required,email"`
-		Password string 	`json:"password" binding:"required,min=6"`
+		Email string	 	`json:"email" binding:"required,email,max=100"`
+		Password string 	`json:"password" binding:"required,min=3,max=100"`
 	}
 
 	var req LoginRequest
@@ -112,7 +113,7 @@ func (server *Server) Login (ctx *gin.Context) {
 		return
 	}		
 	
-	token, err := utils.CreateToken(user.UserID)
+	token, err := utils.CreateToken(user.UserID,user.Email)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 		"error": err.Error(),})
@@ -120,7 +121,7 @@ func (server *Server) Login (ctx *gin.Context) {
 	}
 
 
-	refreshToken, _ := utils.CreateToken(user.UserID)
+	refreshToken, _ := utils.CreateToken(user.UserID,user.Email)
 
 	// 
    	args := database.CreateUserSessionParams{
@@ -145,3 +146,44 @@ func (server *Server) Login (ctx *gin.Context) {
 		"refresh": refreshToken,
 		})		
 }
+
+func (server *Server )GetProfile (ctx *gin.Context){
+    reqPayload, err := middleware.GetAuthPayload(ctx)
+    if err != nil {
+        ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+            "error": "Unauthoized",
+			
+        })
+        return
+    }
+
+	user, err := server.dbq.GetUserByUserID(ctx, reqPayload.UserID)
+	if err != nil {
+		    ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+            "error": "User not found",
+        })
+        return
+	}
+
+	type UserProfile struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		Phone     string `json:"phone"`
+		Role      string `json:"role"`
+	}
+	
+	data := &UserProfile{
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Phone:     user.Phone,
+		Role:      user.Role,
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"profile": data,
+	})
+
+} 

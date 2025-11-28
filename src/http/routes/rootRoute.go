@@ -19,6 +19,7 @@ func RootRouter(router *gin.Engine, controllers *controllers.Server) *gin.Engine
 	apiRoutes := router.Group("/api/v1")
 	authRoute(apiRoutes, controllers)
 
+	
 	// Health check endpoint
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

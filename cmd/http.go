@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"log"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/iambasill/streamfleet/src/configs"
 	"github.com/iambasill/streamfleet/src/database"
 	dbq "github.com/iambasill/streamfleet/src/database/sqlc"
 	controller "github.com/iambasill/streamfleet/src/http/controllers"
@@ -15,27 +15,12 @@ import (
 )
 
 func RunHttpServer() {
-	// Load configurations
-	DBenv, err := configs.DatabaseConfig(".")
-	if err != nil {
-		log.Fatal("Cannot access Database Variables:", err)
-	}
 
-	env, err := configs.ENVConfig(".")
-	if err != nil {
-		log.Fatal("Cannot access ENV Variables:", err)
-	}
-
-	// Database connection
-	conn, err := database.ConnectDB(DBenv)
+	conn, err := database.ConnectDB()
 	if err != nil {
 		log.Fatal("Cannot connect to database:", err)
 	}
-	defer func() {
-		if err := conn.Close(); err != nil {
-			log.Printf("Error closing database connection: %v", err)
-		}
-	}()
+	defer conn.Close()
 
 	// Initialize dependencies
 	dbqueries := dbq.NewDBQuery(conn)
@@ -56,8 +41,14 @@ func RunHttpServer() {
 
 	routes.RootRouter(server, controller)
 
-	log.Printf("Starting HTTP server on port %s...", env.HTTP_SERVER_ADDRESS)
-	if err := server.Run(":" + env.HTTP_SERVER_ADDRESS); err != nil {
+	HTTPServerAddress := os.Getenv("HTTP_SERVER_PORT")
+	if HTTPServerAddress == "" {
+		HTTPServerAddress = ":50051"
+	}
+
+
+	log.Printf("Starting HTTP server on port %s...", HTTPServerAddress)
+	if err := server.Run(":" + HTTPServerAddress); err != nil {
 		log.Fatalf("Failed to run HTTP server: %v", err)
 	}
 

@@ -7,9 +7,20 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	cmd "github.com/iambasill/streamfleet/cmd"
+	"github.com/joho/godotenv"
 )
 
+
+
+
+
 func main() {
+
+	
+    err := godotenv.Load()
+    if err != nil {
+        log.Fatal("Error loading .env file")
+    }
 
 	// dbEnv, err := configs.DatabaseConfig(".")
 	// if err != nil {
